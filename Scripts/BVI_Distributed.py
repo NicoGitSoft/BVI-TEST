@@ -22,8 +22,8 @@ except:
 
 # Ruta del modelo la configuración de la red neuronal entrenada para la deteción de objetos
 SCRIPT_DIR = Path(__file__).resolve().parent
-MODEL_PATH = str(SCRIPT_DIR / "../Models/SingsYOLOv8n/SingsYOLOv8n_openvino_2021.4_6shave.blob")
-CONFIG_PATH = str(SCRIPT_DIR / "../Models/SingsYOLOv8n/SingsYOLOv8n.json")
+MODEL_PATH = str(SCRIPT_DIR / "/../Models/SingsYOLOv8n/SingsYOLOv8n_openvino_2021.4_6shave.blob")
+CONFIG_PATH = str(SCRIPT_DIR / "/../Models/SingsYOLOv8n/SingsYOLOv8n.json")
 
 # Extraer metadata del archivo de configuración .json
 with open(CONFIG_PATH, 'r') as file:
