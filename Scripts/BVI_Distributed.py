@@ -2,6 +2,7 @@ import serial, time, os, json, math, csv, cv2
 import numpy as np
 import depthai as dai
 import mediapipe as mp
+from pathlib import Path
 
 
 # crear un objeto para de mediaPipe para la detección una sola mano
@@ -20,8 +21,9 @@ except:
     serial_is_connected = False
 
 # Ruta del modelo la configuración de la red neuronal entrenada para la deteción de objetos
-MODEL_PATH = os.path.join(MainDir, './Models/MyModelYOLOv7tiny', "best_openvino_2021.4_6shave.blob")
-CONFIG_PATH = os.path.join(MainDir, './Models/MyModelYOLOv7tiny', "best.json")
+SCRIPT_DIR = Path(__file__).resolve().parent
+MODEL_PATH = str(SCRIPT_DIR / "../Models/SingsYOLOv8n/SingsYOLOv8n_openvino_2021.4_6shave.blob")
+CONFIG_PATH = str(SCRIPT_DIR / "../Models/SingsYOLOv8n/SingsYOLOv8n.json")
 
 # Extraer metadata del archivo de configuración .json
 with open(CONFIG_PATH, 'r') as file:
