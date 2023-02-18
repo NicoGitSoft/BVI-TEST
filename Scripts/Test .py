@@ -1,4 +1,4 @@
-from Utilities import *
+from Utilities2 import *
 import cv2, serial, time, math, os, subprocess
 import scipy.io as sio
 import numpy as np
@@ -117,8 +117,8 @@ start_buzze_time = 0        # tiempo de inicio de sonido del buzzer
 SCRIPT_DIR = Path(__file__).resolve().parent
 PALM_DETECTION_MODEL = str(SCRIPT_DIR / "../Models/Hands/palm_detection_sh4.blob")
 LANDMARK_MODEL_LITE = str(SCRIPT_DIR / "../Models/Hands/hand_landmark_lite_sh4.blob")
-MY_YOLO_MODEL = str(SCRIPT_DIR /  "../Models/Sings/SingsYOLOv8n/SingsYOLOv8n_openvino_2021.4_6shave.blob")
-YOLO_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv8n/SingsYOLOv8n.json")
+MY_YOLO_MODEL = str(SCRIPT_DIR /  "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t_openvino_2021.4_6shave.blob")
+YOLO_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLO7t.json")
 
 ##################### INICIALIZACIÓN DE OBJETOS #####################
 
@@ -139,9 +139,10 @@ except(ImportError, RuntimeError):
 
 data = DepthYoloHandTracker(
     temperature_sensing = Measure,
-    use_hand = True,
+    use_hand = False,
     use_yolo = True,
-    yolo_model = MY_YOLO_MODEL,
+    use_depth = True,
+    use_mediapipe=True,
     yolo_configurations = YOLO_CONFIG,
     )
 
@@ -157,8 +158,8 @@ except:
 #######################################################################	
 
 loop_start_time = time.time() # tiempo de inicio del bucle principal
-while True:
-    frame, hands, yolo_detections, labels, width, height, depthFrame, chip_temperature = data.next_frame()
+for i in range(0, 500):
+    frame, hand , yolo_detections, labels, width, height, depthFrame, chip_temperature = data.next_frame()
 
     # Dedección de obstáculos en la ROI Central
     """ Uso del buzzer para sonar más frecuentemente a medida que se acerca un objeto en la ROI central"""
@@ -180,9 +181,10 @@ while True:
     si es así, se le informa al usuario que que su mano está siendo untilizada como referencia para la 
     detección del objeto más cercano, de lo contrario se usa centro de la imagen como referencia """
     x_ref, y_ref = (x_center, y_center) # Usar coordenadas del centro de la imagen como referencia en primera instancia
-    if len(hands) > 0: # Si se detecta la mano del usuario, cambiar la referencia a la punta del dedo índice
-        x_doll, y_doll = hands[0].landmarks[0,:2] # Coordenadas de la muñeca
-        x_index_finger, y_index_finger = hands[0].landmarks[8,:2] # Coordenadas de la punta del dedo índice
+    print("hand : ", hand )
+    if len(hand ) > 0: # Si se detecta la mano del usuario, cambiar la referencia a la punta del dedo índice
+        x_doll, y_doll = hand[0] # Coordenadas de la muñeca
+        x_index_finger, y_index_finger = hand[1] # Coordenadas de la punta del dedo índice
         dollROI = ROI((x_doll, y_doll), DELTA_DOLL) # ROI de la muñeca en la imagen de color
         dollDepthROI = ROI2DepthROI(dollROI) # ROI de la muñeca en la imagen de profundidad
         dollDistance = AverageDepth(dollDepthROI, depthFrame) # Distancia de la muñeca a la cámara
@@ -315,6 +317,7 @@ while True:
 # Cerrar objetos
 data.exit()
 if serial_is_connected: serial.close()
+
 
 # Mostrar los FPS promedio por consola
 print("FPS: {:.2f}".format(np.mean(fps)))

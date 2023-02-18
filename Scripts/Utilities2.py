@@ -4,12 +4,17 @@ from pathlib import Path
 import json, cv2
 from math import pi, floor, atan2, cos, sin
 from scipy.special import expit
+try:
+    import mediapipe as mp
+    use_mediapipe = True
+except:
+    use_mediapipe = False
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-PALM_DETECTION_MODEL = str(SCRIPT_DIR / "Models/Hands Models/palm_detection_sh4.blob")
-LANDMARK_MODEL_LITE = str(SCRIPT_DIR / "Models/Hands Models/hand_landmark_lite_sh4.blob")
-YOLO_MODEL = str(SCRIPT_DIR / "Models/BVI Models/best3_openvino_2021.4_6shave.blob")
-YOLO_CONFIG = str(SCRIPT_DIR / "Models/BVI Models/best3.json")
+PALM_DETECTION_MODEL = str(SCRIPT_DIR / "../Models/Hands/palm_detection_sh4.blob")
+LANDMARK_MODEL_LITE = str(SCRIPT_DIR / "../Models/Hands/hand_landmark_lite_sh4.blob")
+YOLO_MODEL = str(SCRIPT_DIR /  "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t_openvino_2021.4_6shave.blob")
+YOLO_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t.json")
 
 class DepthYoloHandTracker:
     def __init__(self,
@@ -19,6 +24,7 @@ class DepthYoloHandTracker:
         yolo_configurations=YOLO_CONFIG,
         use_yolo=True,
         use_hand=True,
+        use_mediapipe=use_mediapipe,
         use_depth=True,
         temperature_sensing=False, 
         pd_score_thresh=0.5,
@@ -45,6 +51,12 @@ class DepthYoloHandTracker:
 
         self.use_hand = use_hand
         #if use_hand: #print("Hand Tracking Enabled")
+
+        self.use_mediapipe = use_mediapipe
+        if use_mediapipe: 
+            mp_hands = mp.solutions.hands
+            self.hand = mp_hands.Hands(max_num_hands=1)
+            #print("MediaPipe Enabled")
 
         self.use_yolo = use_yolo
         if use_yolo:
@@ -112,7 +124,7 @@ class DepthYoloHandTracker:
         if self.use_depth:
             self.q_stereo_out = self.device.getOutputQueue(name="stereo_out", maxSize=4, blocking=False)
 
-        if self.use_hand:
+        if self.use_hand and not self.use_mediapipe:
             self.q_pd_out = self.device.getOutputQueue(name="pd_out", maxSize=2, blocking=False)
             self.q_manip_cfg = self.device.getInputQueue(name="manip_cfg")
             self.q_lm_out = self.device.getOutputQueue(name="lm_out", maxSize=2, blocking=False)
@@ -180,7 +192,7 @@ class DepthYoloHandTracker:
             left.out.link(stereo.left)
             right.out.link(stereo.right)
 
-        if self.use_hand:
+        if self.use_hand and not self.use_mediapipe:
             # ImageManip
             manip = pipeline.createImageManip()   
             manip.inputImage.setQueueSize(1)
@@ -307,82 +319,106 @@ class DepthYoloHandTracker:
         if not self.use_hand:
             self.hands = []
         else:
-            if not self.use_previous_landmarks:
-                # Send image manip config to the device
-                cfg = dai.ImageManipConfig()
-                # We prepare the input to the Palm detector
-                cfg.setResizeThumbnail(self.pd_input_length, self.pd_input_length)
-                self.q_manip_cfg.send(cfg)
 
-            if self.pad_h:
-                square_frame = cv2.copyMakeBorder(video_frame, self.pad_h, self.pad_h, self.pad_w, self.pad_w, cv2.BORDER_CONSTANT)
-            else:
-                square_frame = video_frame
-
-            # Get palm detection
-            if self.use_previous_landmarks:
-                self.hands = self.hands_from_landmarks # Use previous landmarks
-            else: # Use palm detection
-                inference = self.q_pd_out.get()
-                hands = self.pd_postprocess(inference)
-                self.nb_frames_pd_inference += 1
-                if not self.solo and self.nb_hands_in_previous_frame == 1 and len(hands) <= 1:
-                    self.hands = self.hands_from_landmarks
+            # Usar MediaPipe Hands en Raspberry Pi
+            if self.use_mediapipe:
+                hand_results = self.hand.process(video_frame)
+                if hand_results.multi_hand_landmarks:
+                    for hand_landmarks in hand_results.multi_hand_landmarks:
+                        
+                        WRIST = int(hand_landmarks.landmark[0].x*self.img_h), int(hand_landmarks.landmark[0].y*self.img_w)
+                        INDEX_FINGER_TIP = int(hand_landmarks.landmark[8].x*self.img_h), int(hand_landmarks.landmark[8].y*self.img_w)
+                        self.hands = [WRIST, INDEX_FINGER_TIP]
                 else:
-                    self.hands = hands
-        
-            if len(self.hands) == 0: # No hand detected
-                self.nb_frames_no_hand += 1
+                    self.hands = []
+
+            # Usar MediaPipe Hands en la OAK-D
+            else:
+                if not self.use_previous_landmarks:
+                    # Send image manip config to the device
+                    cfg = dai.ImageManipConfig()
+                    # We prepare the input to the Palm detector
+                    cfg.setResizeThumbnail(self.pd_input_length, self.pd_input_length)
+                    self.q_manip_cfg.send(cfg)
+
+                if self.pad_h:
+                    square_frame = cv2.copyMakeBorder(video_frame, self.pad_h, self.pad_h, self.pad_w, self.pad_w, cv2.BORDER_CONSTANT)
+                else:
+                    square_frame = video_frame
+
+                # Get palm detection
+                if self.use_previous_landmarks:
+                    self.hands = self.hands_from_landmarks # Use previous landmarks
+                else: # Use palm detection
+                    inference = self.q_pd_out.get()
+                    hands = self.pd_postprocess(inference)
+                    self.nb_frames_pd_inference += 1
+                    if not self.solo and self.nb_hands_in_previous_frame == 1 and len(hands) <= 1:
+                        self.hands = self.hands_from_landmarks
+                    else:
+                        self.hands = hands
             
-            if self.use_lm:
-                nb_lm_inferences = len(self.hands)
-                # Hand landmarks, send requests
-                for i,h in enumerate(self.hands):
-                    img_hand = warp_rect_img(h.rect_points, square_frame, self.lm_input_length, self.lm_input_length)
-                    nn_data = dai.NNData()   
-                    nn_data.setLayer("input_1", to_planar(img_hand, (self.lm_input_length, self.lm_input_length)))
-                    self.q_lm_in.send(nn_data)
+                if len(self.hands) == 0: # No hand detected
+                    self.nb_frames_no_hand += 1
                 
-                # Get inference results
-                for i,h in enumerate(self.hands):
-                    inference = self.q_lm_out.get()
-                    #if i == 0: self.glob_lm_rtrip_time += now() - lm_rtrip_time
-                    self.lm_postprocess(h, inference)
+                if self.use_lm:
+                    nb_lm_inferences = len(self.hands)
+                    # Hand landmarks, send requests
+                    for i,h in enumerate(self.hands):
+                        img_hand = warp_rect_img(h.rect_points, square_frame, self.lm_input_length, self.lm_input_length)
+                        nn_data = dai.NNData()   
+                        nn_data.setLayer("input_1", to_planar(img_hand, (self.lm_input_length, self.lm_input_length)))
+                        self.q_lm_in.send(nn_data)
+                    
+                    # Get inference results
+                    for i,h in enumerate(self.hands):
+                        inference = self.q_lm_out.get()
+                        #if i == 0: self.glob_lm_rtrip_time += now() - lm_rtrip_time
+                        self.lm_postprocess(h, inference)
 
-                # Filter hands with low confidence
-                self.hands = [ h for h in self.hands if h.lm_score > self.lm_score_thresh]
+                    # Filter hands with low confidence
+                    self.hands = [ h for h in self.hands if h.lm_score > self.lm_score_thresh]
 
-                self.hands_from_landmarks = [hand_landmarks_to_rect(hand) for hand in self.hands]
-                
-                nb_hands = len(self.hands)
+                    self.hands_from_landmarks = [hand_landmarks_to_rect(hand) for hand in self.hands]
+                    
+                    nb_hands = len(self.hands)
 
-                # Stats
-                if nb_lm_inferences: self.nb_frames_lm_inference += 1
-                self.nb_lm_inferences += nb_lm_inferences
-                self.nb_failed_lm_inferences += nb_lm_inferences - nb_hands 
-                if self.use_previous_landmarks: self.nb_frames_lm_inference_after_landmarks_ROI += 1
+                    # Stats
+                    if nb_lm_inferences: self.nb_frames_lm_inference += 1
+                    self.nb_lm_inferences += nb_lm_inferences
+                    self.nb_failed_lm_inferences += nb_lm_inferences - nb_hands 
+                    if self.use_previous_landmarks: self.nb_frames_lm_inference_after_landmarks_ROI += 1
 
-                self.use_previous_landmarks = True
-                if nb_hands == 0:
-                    self.use_previous_landmarks = False
-                #else: cv2.imshow("img_hand", img_hand)
-                
-                self.nb_hands_in_previous_frame = nb_hands           
-                
-                for hand in self.hands:
-                    # If we added padding to make the image square, we need to remove this padding from landmark coordinates and from rect_points
-                    if self.pad_h > 0:
-                        hand.landmarks[:,1] -= self.pad_h
-                        for i in range(len(hand.rect_points)):
-                            hand.rect_points[i][1] -= self.pad_h
-                    if self.pad_w > 0:
-                        hand.landmarks[:,0] -= self.pad_w
-                        for i in range(len(hand.rect_points)):
-                            hand.rect_points[i][0] -= self.pad_w
+                    self.use_previous_landmarks = True
+                    if nb_hands == 0:
+                        self.use_previous_landmarks = False
+                    #else: cv2.imshow("img_hand", img_hand)
+                    
+                    self.nb_hands_in_previous_frame = nb_hands           
+                    
+                    for hand in self.hands:
+                        # If we added padding to make the image square, we need to remove this padding from landmark coordinates and from rect_points
+                        if self.pad_h > 0:
+                            hand.landmarks[:,1] -= self.pad_h
+                            for i in range(len(hand.rect_points)):
+                                hand.rect_points[i][1] -= self.pad_h
+                        if self.pad_w > 0:
+                            hand.landmarks[:,0] -= self.pad_w
+                            for i in range(len(hand.rect_points)):
+                                hand.rect_points[i][0] -= self.pad_w
 
-                    # Set the hand label
-                    hand.label = "right" if hand.handedness > 0.5 else "left"
-        
+                        # Set the hand label
+                        hand.label = "right" if hand.handedness > 0.5 else "left"
+                    
+                    print(self.hands)
+
+                    if len(self.hands) > 0:
+                        WRIST = self.hands[0].landmarks[0,:2]
+                        INDEX_FINGER_TIP = self.hands[0].landmarks[8,:2]
+                        self.hands = [WRIST, INDEX_FINGER_TIP]
+                    else:
+                        self.hands = []
+            
         return video_frame, self.hands, self.yolo_detections, self.yolo_labels, self.img_h, self.img_w, self.depth_frame, self.chipTemperature
 
 

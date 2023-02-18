@@ -7,7 +7,7 @@ from pathlib import Path
 
 # crear un objeto para de mediaPipe para la detección una sola mano
 mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(max_num_hands=1)
+hand = mp_hands.Hands(max_num_hands=1)
 
 # Cambiar la ruta de ejecución aquí
 MainDir = os.path.dirname(os.path.abspath(__file__))
@@ -170,8 +170,8 @@ def Distance3D(detection):
     return math.sqrt(X**2 + Y**2 + Z**2)/1000
 
 # Función que entrega la posición de la punta del dedo índice
-def IndexTipPosition(results_hands, width, height):
-    for hand_landmarks in results_hands.multi_hand_landmarks:
+def IndexTipPosition(hand_results, width, height):
+    for hand_landmarks in hand_results.multi_hand_landmarks:
         x1 = int(hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].x * width)
         y1 = int(hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].y * height)
     return x1, y1
@@ -259,9 +259,9 @@ while True:
         buzzer_messages.append('nan')
 
     # Definir el punto de referencia para la detección más cercana
-    results_hands = hands.process(frame)
-    if results_hands.multi_hand_landmarks:
-        x0, y0 = IndexTipPosition(results_hands, width, height)
+    hand_results = hand.process(frame)
+    if hand_results.multi_hand_landmarks:
+        x0, y0 = IndexTipPosition(hand_results, width, height)
     else:
         x0, y0 = width//2, height//2
 
