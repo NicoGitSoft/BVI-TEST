@@ -185,7 +185,7 @@ depthHeight = monoLeft.getResolutionHeight()
 X0, Y0 = depthWidth//2, depthHeight//2
 
 # Video para las detecciones y el mapa de profundidad
-VideoRGB = cv2.VideoWriter('VideoRGB.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (width, height))
+#VideoRGB = cv2.VideoWriter('VideoRGB.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (width, height))
 #VideoDepth = cv2.VideoWriter('VideoDepth.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (width, height))
 
 # Región de interés (ROI) para la estimación de la distancia de obstáculos z
@@ -363,14 +363,14 @@ while True:
         cv2.imshow("Disparity Map", depthFrameColor)
         cv2.imshow("RGB", frame)
         # Guardar fotograma en el videoRGB
-        VideoRGB.write(frame)
+        # VideoRGB.write(frame)
 
 # Cerrar todas las ventanas y apagar la cámara
 if visualize: cv2.destroyAllWindows()
 device.close()
 
 # Guardar los datos de las listas en un archivo .csv
-with open('data.csv', 'w', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(["times", "z", "d", "h", "v", "nearest_labels", "haptic_messages", "buzzer_messages"])
-    writer.writerows(zip(times, z, d, h, v, nearest_labels, haptic_messages, buzzer_messages))
+#with open('data.csv', 'w', newline='') as file:
+#    writer = csv.writer(file)
+#    writer.writerow(["times", "z", "d", "h", "v", "nearest_labels", "haptic_messages", "buzzer_messages"])
+#    writer.writerows(zip(times, z, d, h, v, nearest_labels, haptic_messages, buzzer_messages))

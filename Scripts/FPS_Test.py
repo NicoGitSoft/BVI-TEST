@@ -54,20 +54,8 @@ SingsYOLOv5n_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv5n/SingsYOLOv5
 SingsYOLO_MODELS = [SingsYOLOv8n_MODEL, SingsYOLOv7t_MODEL, SingsYOLOv7s_MODEL, SingsYOLOv5n_MODEL] 
 SingsYOLO_CONFIGS = [SingsYOLOv8n_CONFIG, SingsYOLOv7t_CONFIG, SingsYOLOv7s_CONFIG, SingsYOLOv5n_CONFIG]
 
-# Guardar los resultados en un archivo .csv
-writer = csv.writer(open("FPS_Test.csv", "w"))
-writer.writerow(["Model_Name", "AverageFPS_OnlyYolo", "AverageConfidence_OnlyYOLO", "frames_with_detections_OnlyYOLO", "AverageFPS_HandYoloDepth", "AverageConfidence_HandYoloDepth", "frames_with_detections_HandYoloDepth"])
-
 # Pruebas de los modelos
 for i in range(4):
-    Model_Name = SingsYOLO_CONFIGS[i].rstrip('.json').split('/')[-1]
-    AverageFPS_OnlyYolo, AverageConfidence_OnlyYOLO, frames_with_detections_OnlyYOLO = TestFPS(100, False, False, SingsYOLO_MODELS[i], SingsYOLO_CONFIGS[i])
-    AverageFPS_HandYoloDepth, AverageConfidence_HandYoloDepth, frames_with_detections_HandYoloDepth = TestFPS(100, True, True, SingsYOLO_MODELS[i], SingsYOLO_CONFIGS[i])
-    writer.writerow([Model_Name, AverageFPS_OnlyYolo, AverageConfidence_OnlyYOLO, frames_with_detections_OnlyYOLO, AverageFPS_HandYoloDepth, AverageConfidence_HandYoloDepth, frames_with_detections_HandYoloDepth])
-
-
-# Model_Name,AverageFPS_OnlyYolo,AverageConfidence_OnlyYOLO,frames_with_detections_OnlyYOLO,AverageFPS_HandYoloDepth,AverageConfidence_HandYoloDepth,frames_with_detections_HandYoloDepth
-# SingsYOLOv8n,     14.29688440838691,  0,                  0,  2.1122880648319273,     0,  0
-# SingsYOLOv7t,     14.783580925092542, 0,                  0,  4.517008432634892,      0,  0
-# SingsYOLOv7s,      1.275364008238509, 0,                  0,  0.29850401513743213,    0,  0
-# SingsYOLOv5n,     18.194891336783808, 60.63094735145569,  4,  3.3415063916774894,     0,  0
+    model_name = SingsYOLO_CONFIGS[i].rstrip('.json').split('/')[-1]
+    data_only_yolo = TestFPS(100, False, False, SingsYOLO_MODELS[i], SingsYOLO_CONFIGS[i])
+    print(data_only_yolo)
