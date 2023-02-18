@@ -58,7 +58,7 @@ f2 = lambda x: (x + 1)**2 - 1
 
 ##################### CONSTANTES Y CONFIGURACIONES #####################
 width = height = 640 # Resolución de entrada de la red neuronal
-VideoRGB = cv2.VideoWriter('VideoRGB.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (width, height))
+#VideoRGB = cv2.VideoWriter('VideoRGB.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (width, height))
 
 # Región de interés (ROI) para la estimación de la distancia de obstáculos z
 DELTA = 30 # Radio de la ROI Cental en pixeles
@@ -137,17 +137,17 @@ except(ImportError, RuntimeError):
     print("Thermocouple MAX6675 is not ready")
 
 # Inicializar el objeto para la detección de manos y señalizaciones de espacios interiores
-
+Measure = False
 data = DepthYoloHandTracker(
     temperature_sensing = Measure,
-    use_hand = False,
+    use_hand = True,
     use_yolo = True,
     use_depth = True,
-    use_mediapipe=True,
+    use_mediapipe=False,
     yolo_configurations = YOLO_CONFIG,
     yolo_model = MY_YOLO_MODEL)
 
-visualize = True
+visualize = False
 try:# Intentar establecer un objeto para comunicación serial a usando UART 
     serial = serial.Serial("/dev/ttyAMA0", 9600, timeout=1)
     serial_is_connected = True
@@ -182,7 +182,7 @@ for i in range(0, 500):
     si es así, se le informa al usuario que que su mano está siendo untilizada como referencia para la 
     detección del objeto más cercano, de lo contrario se usa centro de la imagen como referencia """
     x_ref, y_ref = (x_center, y_center) # Usar coordenadas del centro de la imagen como referencia en primera instancia
-    print("hand : ", hand )
+
     if len(hand ) > 0: # Si se detecta la mano del usuario, cambiar la referencia a la punta del dedo índice
         x_doll, y_doll = hand[0] # Coordenadas de la muñeca
         x_index_finger, y_index_finger = hand[1] # Coordenadas de la punta del dedo índice
@@ -310,6 +310,9 @@ for i in range(0, 500):
         cv2.putText(frame, "t: " + ("{:.2f} s".format(times[-1])), (0, 25), FontFace, FontSize, TextColor, 2) 
         # Mostrar el frame de la cámara RGB
         cv2.imshow("frame", frame)
+
+    # Mostrar por consola el numero del potograma actual y los fps
+    print( i, "fps: {:.2f}".format(fps[-1]), sep="\t", end="\r")
 
     # Salir del programa si alguna de estas teclas son presionadas {ESC, SPACE, q}
     if cv2.waitKey(1) in [27, 32, ord('q')]:
