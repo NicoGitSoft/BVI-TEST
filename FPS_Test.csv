@@ -1,3 +1,0 @@
-Model_Name,AverageFPS_OnlyYolo,AverageConfidence_OnlyYOLO,frames_with_detections_OnlyYOLO,AverageFPS_HandYoloDepth,AverageConfidence_HandYoloDepth,frames_with_detections_HandYoloDepth
-SingsYOLOv8,55.9831094057437,0,0,7.801970432335041,0,0
-SingsYOLOv7t,64.92165691750169,0,0,7.226724276105854,56.37073516845703,1
