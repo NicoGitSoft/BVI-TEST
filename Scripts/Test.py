@@ -130,6 +130,7 @@ try:
     sck = 18
     so = 16
     max6675.set_pin(cs, sck, so, 1)
+    Measure = True
     print("Thermocouple MAX6675 is ready")
 except(ImportError, RuntimeError):
     Measure = False
@@ -144,7 +145,7 @@ data = DepthYoloHandTracker(
     use_depth = True,
     use_mediapipe=True,
     yolo_configurations = YOLO_CONFIG,
-    )
+    yolo_model = MY_YOLO_MODEL)
 
 visualize = True
 try:# Intentar establecer un objeto para comunicación serial a usando UART 
