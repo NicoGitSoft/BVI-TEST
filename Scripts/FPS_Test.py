@@ -14,7 +14,7 @@ def TestFPS(number_of_frames, opt1, opt2, YOLO_MODEL, YOLO_CONFIG):
                                 yolo_configurations=YOLO_CONFIG)
 
     confidences = []
-    frames_with_detections = 0 # Number of photograms on which detections were found
+    frames_with_detections = 0 
     
     fps = []
     for i in range(number_of_frames):
@@ -29,7 +29,7 @@ def TestFPS(number_of_frames, opt1, opt2, YOLO_MODEL, YOLO_CONFIG):
         print(f"FPS: {fps[-1]:.2f} | Frames with detections: {frames_with_detections}", hands, end='\r')
         
 
-    OAK_D.exit()                            # Cerrar la camara OAK-D
+    OAK_D.exit()                           
     
     AverageConfidence = sum(confidences)/len(confidences) if confidences else 0
     AverageFPS = sum(fps)/len(fps)
