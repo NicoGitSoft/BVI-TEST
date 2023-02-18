@@ -4,7 +4,6 @@ import depthai as dai
 import mediapipe as mp
 from pathlib import Path
 
-
 # crear un objeto para de mediaPipe para la detección una sola mano
 mp_hands = mp.solutions.hands
 hand = mp_hands.Hands(max_num_hands=1)
@@ -128,7 +127,6 @@ device =dai.Device(pipeline)
 # Output queues will be used to get the rgb frames and nn data from the outputs defined above
 previewQueue = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
 detectionNNQueue = device.getOutputQueue(name="detections", maxSize=4, blocking=False)
-xoutBoundingBoxDepthMappingQueue = device.getOutputQueue(name="boundingBoxDepthMapping", maxSize=4, blocking=False)
 depthQueue = device.getOutputQueue(name="depth", maxSize=4, blocking=False)
 networkQueue = device.getOutputQueue(name="nnNetwork", maxSize=4, blocking=False)
 

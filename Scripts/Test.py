@@ -143,11 +143,11 @@ data = DepthYoloHandTracker(
     use_hand = True,
     use_yolo = True,
     use_depth = True,
-    use_mediapipe=False,
+    use_mediapipe=True,
     yolo_configurations = YOLO_CONFIG,
     yolo_model = MY_YOLO_MODEL)
 
-visualize = False
+visualize = True
 try:# Intentar establecer un objeto para comunicación serial a usando UART 
     serial = serial.Serial("/dev/ttyAMA0", 9600, timeout=1)
     serial_is_connected = True
@@ -291,9 +291,10 @@ for i in range(0, 500):
             chipTemperatures.append(chip_temperature)
             max6675Temperature.append(max6675.read_temp(cs)) # Temperatura del sensor DHT22
             cpuTemperature.append(float(subprocess.check_output("vcgencmd measure_temp", shell=True).decode("utf-8").replace("temp=","").replace("'C\n",""))) # Temperatura de la CPU de la Raspberry Pi
-        fps.append( frames_counter / (current_time - frames_timer) )
+        #fps.append( frames_counter / (current_time - frames_timer) )
         frames_counter = 0
         frames_timer = current_time
+    fps.append( 1 / (current_time - frames_timer) if (current_time - frames_timer) > 0 else 0 )
 
     if visualize:
         # Visualizar la mapa de profundidad
@@ -311,8 +312,8 @@ for i in range(0, 500):
         # Mostrar el frame de la cámara RGB
         cv2.imshow("frame", frame)
 
-    # Mostrar por consola el numero del potograma actual y los fps
-    print( i, "fps: {:.2f}".format(fps[-1]), sep="\t", end="\r")
+    # Mostrar por consola los fps
+    print("fps: {:.2f}".format(fps[-1]), sep="\t", end="\r")
 
     # Salir del programa si alguna de estas teclas son presionadas {ESC, SPACE, q}
     if cv2.waitKey(1) in [27, 32, ord('q')]:
