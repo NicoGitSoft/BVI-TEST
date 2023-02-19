@@ -27,6 +27,7 @@ def TestFPS(number_of_frames, opt1, opt2, YOLO_MODEL, YOLO_CONFIG):
         end_time = time.time() # Tiempo final
         fps.append(1/(end_time-star_time))
         print(f"FPS: {fps[-1]:.2f} | Frames with detections: {frames_with_detections}", hands, end='\r')
+        cv2.imshow("Frame", frame)
         
 
     OAK_D.exit()                           
@@ -51,11 +52,37 @@ SingsYOLOv7s_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7s/SingsYOLOv7
 SingsYOLOv5n_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv5n/SingsYOLOv5n.json")
 
 # Listas de los modelos y sus respectivas configuraciones
-SingsYOLO_MODELS = [SingsYOLOv8n_MODEL, SingsYOLOv7t_MODEL, SingsYOLOv7s_MODEL, SingsYOLOv5n_MODEL] 
-SingsYOLO_CONFIGS = [SingsYOLOv8n_CONFIG, SingsYOLOv7t_CONFIG, SingsYOLOv7s_CONFIG, SingsYOLOv5n_CONFIG]
+SingsYOLO_MODELS = [SingsYOLOv8n_MODEL, SingsYOLOv7t_MODEL, SingsYOLOv5n_MODEL] 
+SingsYOLO_CONFIGS = [SingsYOLOv8n_CONFIG, SingsYOLOv7t_CONFIG, SingsYOLOv5n_CONFIG]
 
-# Pruebas de los modelos
-for i in range(4):
+# Pruebas de los modelos con n frames
+number_of_frames = 100
+for i in range(len(SingsYOLO_MODELS)):
     model_name = SingsYOLO_CONFIGS[i].rstrip('.json').split('/')[-1]
     data_only_yolo = TestFPS(100, False, False, SingsYOLO_MODELS[i], SingsYOLO_CONFIGS[i])
-    print(data_only_yolo)
+
+    OAK_ONLY_YOLO = DepthYoloHandTracker(use_hand=False, use_depth=False,
+                                         yolo_model=SingsYOLO_MODELS[i],
+                                         yolo_configurations=SingsYOLO_CONFIGS[i])
+
+    confidences = []
+    yolo_detections = 0 
+    
+    fps = []
+    for i in range(number_of_frames):
+        star_time = time.time() # Tiempo inicial
+        frame, hands, yolo_detections, labels, width, height, depthFrame, chip_temperature = OAK_ONLY_YOLO.next_frame()
+        if len(yolo_detections) > 0:
+            yolo_detections += 1
+            for detection in yolo_detections:
+                confidences.append(detection.confidence*100)
+        end_time = time.time() # Tiempo final
+        fps.append(1/(end_time-star_time))
+        
+        print(f"FPS: {fps[-1]:.2f}", hands, end='\r')
+        cv2.imshow("Frame", frame)
+
+    OAK_ONLY_YOLO.exit()                           
+    
+    AverageConfidence = sum(confidences)/len(confidences) if confidences else 0
+    AverageFPS = sum(fps)/len(fps)
