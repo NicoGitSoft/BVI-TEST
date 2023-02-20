@@ -5,3 +5,4 @@ Models/Sings/SingsYOLOv7s/SingsYOLOv7s.bin
 Models/Sings/SingsYOLOv7s/SingsYOLOv7s.json
 Models/Sings/SingsYOLOv7s/SingsYOLOv7s.pt
 Models/Sings/SingsYOLOv7s/SingsYOLOv7s.xml
+Models/Sings/YOLOv5n/YOLOv5n-simplified.onnx
