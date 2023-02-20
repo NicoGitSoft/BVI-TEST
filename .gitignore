@@ -1,2 +1,8 @@
 __pycache__
 \Models\Sings\SingsYOLOv7s
+Models/Sings/SingsYOLOv7s/SingsYOLOv7s_openvino_2021.4_6shave.blob
+Models/Sings/SingsYOLOv7s/SingsYOLOv7s-simplified.onnx
+Models/Sings/SingsYOLOv7s/SingsYOLOv7s.bin
+Models/Sings/SingsYOLOv7s/SingsYOLOv7s.json
+Models/Sings/SingsYOLOv7s/SingsYOLOv7s.pt
+Models/Sings/SingsYOLOv7s/SingsYOLOv7s.xml
