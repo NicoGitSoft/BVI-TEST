@@ -52,8 +52,8 @@ YOLOv5n_CONFIG = str(SCRIPT_DIR / "../Models/YOLO/YOLOv5n/YOLOv5n.json")
 
 
 # Listas de los modelos y sus respectivas configuraciones
-SingsYOLO_MODELS = [SingsYOLOv7t_MODEL, SingsYOLOv5n_MODEL] 
-SingsYOLO_CONFIGS = [SingsYOLOv7t_CONFIG, SingsYOLOv5n_CONFIG]
+SingsYOLO_MODELS = [ SingsYOLOv5n_MODEL] 
+SingsYOLO_CONFIGS = [ SingsYOLOv5n_CONFIG]
 
 visualize = True
 max_frames = 100
@@ -262,4 +262,10 @@ for j in range(len(SingsYOLO_MODELS)):
 # FPS promedio para YOLO + DEPTH: 12.73
 # FPS promedio para YOLO + DEPTH + HAND.blob: 9.52
 # FPS promedio para YOLO + DEPTH + mediapipe: 8.31
-# Test finalizado para el modelo SingsYOLOv7t en 18.395132541656494 segundos 
+# Test finalizado para el modelo SingsYOLOv7t en 18.395132541656494 segundos
+#
+# FPS promedio para solo YOLO: 15.05
+# FPS promedio para YOLO + DEPTH: 15.12
+# FPS promedio para YOLO + DEPTH + HAND.blob: 8.18
+# FPS promedio para YOLO + DEPTH + mediapipe: 6.48
+# Test finalizado para el modelo SingsYOLOv5n en 25.22651219367981 segundos 
