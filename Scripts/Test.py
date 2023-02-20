@@ -143,7 +143,7 @@ data = DepthYoloHandTracker(
     use_hand = True,
     use_yolo = True,
     use_depth = True,
-    use_mediapipe=True,
+    use_mediapipe=False,
     yolo_configurations = YOLO_CONFIG,
     yolo_model = MY_YOLO_MODEL)
 

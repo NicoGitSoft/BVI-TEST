@@ -56,19 +56,19 @@ SingsYOLO_MODELS = [SingsYOLOv7t_MODEL, SingsYOLOv5n_MODEL]
 SingsYOLO_CONFIGS = [SingsYOLOv7t_CONFIG, SingsYOLOv5n_CONFIG]
 
 visualize = True
-max_frames = 1000
+max_frames = 100
 
-for i in range(len(SingsYOLO_MODELS)):
+for j in range(len(SingsYOLO_MODELS)):
 
-    model_name = SingsYOLO_CONFIGS[i].split('/')[-1].split('.')[0]
+    model_name = SingsYOLO_CONFIGS[j][-17:-5]
 
+    ################## TEST USANDO SOLO YOLO ##################
     data_only_yolo = DepthYoloHandTracker(
         use_depth = False,
         use_hand = False, 
-        yolo_model = SingsYOLO_MODELS[i], 
-        yolo_configurations = SingsYOLO_CONFIGS[i])
+        yolo_model = SingsYOLO_MODELS[j], 
+        yolo_configurations = SingsYOLO_CONFIGS[j])
 
-    ################## TEST DE YOLO ##################
     successful_detections = 0
     failed_detections = 0
     no_detections = 0
@@ -80,47 +80,152 @@ for i in range(len(SingsYOLO_MODELS)):
         # Contador de detecciones
         if len(yolo_detections) > 0:
             for detection in yolo_detections:
-
-                label_number = detection.label
-                
+                label_number = detection.label              
                 if label_number == 5:
                     successful_detections += 1
                 else:
                     failed_detections += 1
-
-                if visualize:
-                    x1, x2, y1, y2 = int(detection.xmin*width), int(detection.xmax*width), int(detection.ymin*height), int(detection.ymax*height)
-                    cv2.putText(frame, str(label_number), (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1)
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
-                
         else:
             no_detections += 1
 
-        # Contador de FPS 
+        # Contador de FPS
         frames_counter += 1
         current_time = time.time()
-        times.append(current_time - loop_start_time) # Almacenar el tiempo de ejecución
         if (current_time - frames_timer) > 1:
             fps.append( frames_counter / (current_time - frames_timer) )
             frames_counter = 0
             frames_timer = current_time
+        #print(model_name, "Frame: ", str(i), "FPS: {:.2f}".format(fps[-1]), end='\r')
 
-        if visualize: cv2.imshow("frame", frame)
-
-        # Salir del programa si alguna de estas teclas son presionadas {ESC, SPACE, q}
-        if cv2.waitKey(1) in [27, 32, ord('q')]:
-            break
-
-        # Imprimir el estado de la detección
-        print("Frame: ", str(i),
-            model_name, "FPS: {:.2f}".format(fps[-1]),
-            "successful detections: ", successful_detections,
-            "failed detections: ", failed_detections,
-            "no detections: ", no_detections,
-            sep='    ' , end='\r')
-
+    # Cerrar conexión con la cámara y mostrar resultados
     data_only_yolo.exit()
-    print(str(i), model_name, "FPS: {:.2f}".format(np.mean(fps)), sep='\t' , end='\n')
+    only_yolo_fps = sum(fps) / len(fps)
 
+    ################## TEST USANDO YOLO + DEPTH ##################
+    data_yolo_depth = DepthYoloHandTracker(
+        use_depth = True,
+        use_hand = False,
+        yolo_model = SingsYOLO_MODELS[j],
+        yolo_configurations = SingsYOLO_CONFIGS[j])
+
+    successful_detections = 0
+    failed_detections = 0
+    no_detections = 0
+
+    loop_start_time = time.time()
+    for i in range(max_frames):
+        frame, hands, yolo_detections, labels, width, height, depthFrame, chip_temperature = data_yolo_depth.next_frame()
+
+        # Contador de detecciones
+        if len(yolo_detections) > 0:
+            for detection in yolo_detections:
+                label_number = detection.label              
+                if label_number == 5:
+                    successful_detections += 1
+                else:
+                    failed_detections += 1
+        else:
+            no_detections += 1
+
+        # Contador de FPS
+        frames_counter += 1
+        current_time = time.time()
+        if (current_time - frames_timer) > 1:
+            fps.append( frames_counter / (current_time - frames_timer) )
+            frames_counter = 0
+            frames_timer = current_time
+        #print(model_name, "Frame: ", str(i), "FPS: {:.2f}".format(fps[-1]), end='\r')
+        
+    # Cerrar conexión con la cámara y mostrar resultados
+    data_yolo_depth.exit()
+    yolo_depth_fps = sum(fps) / len(fps)
+
+    ################## TEST USANDO YOLO + DEPTH + HAND.blob ##################
+    data_yolo_depth_hand = DepthYoloHandTracker(
+        use_depth = True,
+        use_hand = True,
+        use_mediapipe=False,
+        yolo_model = SingsYOLO_MODELS[j],
+        yolo_configurations = SingsYOLO_CONFIGS[j])
+
+    successful_detections = 0
+    failed_detections = 0
+    no_detections = 0
+    
+    loop_start_time = time.time()
+    for i in range(max_frames):
+        frame, hands, yolo_detections, labels, width, height, depthFrame, chip_temperature = data_yolo_depth_hand.next_frame()
+
+        # Contador de detecciones
+        if len(yolo_detections) > 0:
+            for detection in yolo_detections:
+                label_number = detection.label              
+                if label_number == 5:
+                    successful_detections += 1
+                else:
+                    failed_detections += 1
+        else:
+            no_detections += 1
+
+        # Contador de FPS
+        frames_counter += 1
+        current_time = time.time()
+        if (current_time - frames_timer) > 1:
+            fps.append( frames_counter / (current_time - frames_timer) )
+            frames_counter = 0
+            frames_timer = current_time
+        #print(model_name, "Frame: ", str(i), "FPS: {:.2f}".format(fps[-1]), end='\r')
+        
+    # Cerrar conexión con la cámara y mostrar resultados
+    data_yolo_depth_hand.exit()
+    yolo_depth_hand_fps = sum(fps) / len(fps)
+
+    ################## TEST USANDO YOLO + DEPTH + mediapipe ##################
+
+    data_yolo_depth_mediapipe = DepthYoloHandTracker(
+        use_depth = True,
+        use_hand = True,
+        use_mediapipe=True,
+        yolo_model = SingsYOLO_MODELS[j],
+        yolo_configurations = SingsYOLO_CONFIGS[j])
+
+    successful_detections = 0
+    failed_detections = 0
+    no_detections = 0
+
+    loop_start_time = time.time()
+    for i in range(max_frames):
+        frame, hands, yolo_detections, labels, width, height, depthFrame, chip_temperature = data_yolo_depth_mediapipe.next_frame()
+
+        # Contador de detecciones
+        if len(yolo_detections) > 0:
+            for detection in yolo_detections:
+                label_number = detection.label              
+                if label_number == 5:
+                    successful_detections += 1
+                else:
+                    failed_detections += 1
+        else:
+            no_detections += 1
+
+        # Contador de FPS
+        frames_counter += 1
+        current_time = time.time()
+        if (current_time - frames_timer) > 1:
+            fps.append( frames_counter / (current_time - frames_timer) )
+            frames_counter = 0
+            frames_timer = current_time
+        #print(model_name, "Frame: ", str(i), "FPS: {:.2f}".format(fps[-1]), end='\r')
+        
+    # Cerrar conexión con la cámara y mostrar resultados
+    data_yolo_depth_mediapipe.exit()
+    yolo_depth_mediapipe_fps = sum(fps) / len(fps)
+
+    
+    print("\nFPS promedio para solo YOLO: {:.2f}".format(only_yolo_fps))
+    print("FPS promedio para YOLO + DEPTH: {:.2f}".format(yolo_depth_fps))
+    print("FPS promedio para YOLO + DEPTH + HAND.blob: {:.2f}".format(yolo_depth_hand_fps))
+    print("FPS promedio para YOLO + DEPTH + mediapipe: {:.2f}".format(yolo_depth_mediapipe_fps))
+    print("Test finalizado para el modelo", model_name, "en", time.time() - loop_start_time, "segundos \n")
 
     

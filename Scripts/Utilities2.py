@@ -409,8 +409,6 @@ class DepthYoloHandTracker:
 
                         # Set the hand label
                         hand.label = "right" if hand.handedness > 0.5 else "left"
-                    
-                    print(self.hands)
 
                     if len(self.hands) > 0:
                         WRIST = self.hands[0].landmarks[0,:2]
