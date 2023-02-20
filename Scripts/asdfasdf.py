@@ -252,4 +252,14 @@ for j in range(len(SingsYOLO_MODELS)):
 # FPS promedio para YOLO + DEPTH: 10.70
 # FPS promedio para YOLO + DEPTH + HAND.blob: 9.39
 # FPS promedio para YOLO + DEPTH + mediapipe: 9.86
-# Test finalizado para el modelo SingsYOLOv5n en 6.888955593109131 segundos 
+# Test finalizado para el modelo SingsYOLOv5n en 6.888955593109131 segundos
+
+
+
+
+# RASPBERRY PI 4B 4GB
+# FPS promedio para solo YOLO: 13.16
+# FPS promedio para YOLO + DEPTH: 12.73
+# FPS promedio para YOLO + DEPTH + HAND.blob: 9.52
+# FPS promedio para YOLO + DEPTH + mediapipe: 8.31
+# Test finalizado para el modelo SingsYOLOv7t en 18.395132541656494 segundos 
