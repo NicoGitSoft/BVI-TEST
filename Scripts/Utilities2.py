@@ -319,7 +319,6 @@ class DepthYoloHandTracker:
         if not self.use_hand:
             self.hands = []
         else:
-
             # Usar MediaPipe Hands en Raspberry Pi
             if self.use_mediapipe:
                 hand_results = self.hand.process(video_frame)

@@ -228,4 +228,28 @@ for j in range(len(SingsYOLO_MODELS)):
     print("FPS promedio para YOLO + DEPTH + mediapipe: {:.2f}".format(yolo_depth_mediapipe_fps))
     print("Test finalizado para el modelo", model_name, "en", time.time() - loop_start_time, "segundos \n")
 
-    
+
+
+# FPS promedio para solo YOLO: 13.19
+# FPS promedio para YOLO + DEPTH: 12.68
+# FPS promedio para YOLO + DEPTH + HAND.blob: 9.20
+# FPS promedio para YOLO + DEPTH + mediapipe: 9.58
+# Test finalizado para el modelo SingsYOLOv7t en 10.807883262634277 segundos 
+# 
+# FPS promedio para solo YOLO: 10.47
+# FPS promedio para YOLO + DEPTH: 10.97
+# FPS promedio para YOLO + DEPTH + HAND.blob: 9.60
+# FPS promedio para YOLO + DEPTH + mediapipe: 10.04
+# Test finalizado para el modelo SingsYOLOv5n en 8.000313758850098 segundos
+
+# FPS promedio para solo YOLO: 12.97
+# FPS promedio para YOLO + DEPTH: 12.55
+# FPS promedio para YOLO + DEPTH + HAND.blob: 8.54
+# FPS promedio para YOLO + DEPTH + mediapipe: 9.22
+# Test finalizado para el modelo SingsYOLOv7t en 9.47022008895874 segundos 
+# 
+# FPS promedio para solo YOLO: 10.17
+# FPS promedio para YOLO + DEPTH: 10.70
+# FPS promedio para YOLO + DEPTH + HAND.blob: 9.39
+# FPS promedio para YOLO + DEPTH + mediapipe: 9.86
+# Test finalizado para el modelo SingsYOLOv5n en 6.888955593109131 segundos 
