@@ -32,25 +32,28 @@ SingsYOLOv8n_MODEL = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv8n/SingsYOLOv8n
 SingsYOLOv7s_MODEL = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7s/SingsYOLOv7s_openvino_2021.4_6shave.blob")
 SingsYOLOv7t_MODEL = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t_openvino_2021.4_6shave.blob")
 SingsYOLOv5n_MODEL = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv5n/SingsYOLOv5n_openvino_2021.4_6shave.blob")
-YOLOv8n_MODEL = str(SCRIPT_DIR / "../Models/YOLO/YOLOv8n/YOLOv8n_openvino_2021.4_6shave.blob")
-YOLOv7s_MODEL = str(SCRIPT_DIR / "../Models/YOLO/YOLOv7s/YOLOv7s_openvino_2021.4_6shave.blob")
-YOLOv7t_MODEL = str(SCRIPT_DIR / "../Models/YOLO/YOLOv7t/YOLOv7t_openvino_2021.4_6shave.blob")
-YOLOv5n_MODEL = str(SCRIPT_DIR / "../Models/YOLO/YOLOv5n/YOLOv5n_openvino_2021.4_6shave.blob")
-
 
 SingsYOLOv8n_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv8n/SingsYOLOv8n.json")
 SingsYOLOv7t_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t.json")
 SingsYOLOv7s_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7s/SingsYOLOv7s.json")
 SingsYOLOv5n_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv5n/SingsYOLOv5n.json")
 
-
+YOLOv8n_MODEL = str(SCRIPT_DIR / "../Models/YOLO/YOLOv8n/YOLOv8n_openvino_2021.4_6shave.blob")
+YOLOv8s_MODEL = str(SCRIPT_DIR / "../Models/YOLO/YOLOv8s/YOLOv8s_openvino_2021.4_6shave.blob")
+YOLOv7s_MODEL = str(SCRIPT_DIR / "../Models/YOLO/YOLOv7s/YOLOv7s_openvino_2021.4_6shave.blob")
+YOLOv7t_MODEL = str(SCRIPT_DIR / "../Models/YOLO/YOLOv7t/YOLOv7t_openvino_2021.4_6shave.blob")
+YOLOv5n_MODEL = str(SCRIPT_DIR / "../Models/YOLO/YOLOv5n/YOLOv5n_openvino_2021.4_6shave.blob")
 
 YOLOv8n_CONFIG = str(SCRIPT_DIR / "../Models/YOLO/YOLOv8n/YOLOv8n.json")
+YOLOv8s_CONFIG = str(SCRIPT_DIR / "../Models/YOLO/YOLOv8s/YOLOv8s.json")
+YOLOv7s_CONFIG = str(SCRIPT_DIR / "../Models/YOLO/YOLOv7s/YOLOv7s.json")
+YOLOv7t_CONFIG = str(SCRIPT_DIR / "../Models/YOLO/YOLOv7t/YOLOv7t.json")
+YOLOv5n_CONFIG = str(SCRIPT_DIR / "../Models/YOLO/YOLOv5n/YOLOv5n.json")
 
 
 # Listas de los modelos y sus respectivas configuraciones
-SingsYOLO_MODELS = [YOLOv8n_MODEL, SingsYOLOv7t_MODEL, SingsYOLOv5n_MODEL] 
-SingsYOLO_CONFIGS = [YOLOv8n_CONFIG, SingsYOLOv7t_CONFIG, SingsYOLOv5n_CONFIG]
+SingsYOLO_MODELS = [SingsYOLOv7t_MODEL, SingsYOLOv5n_MODEL] 
+SingsYOLO_CONFIGS = [SingsYOLOv7t_CONFIG, SingsYOLOv5n_CONFIG]
 
 visualize = True
 max_frames = 1000
@@ -60,7 +63,7 @@ for i in range(len(SingsYOLO_MODELS)):
     model_name = SingsYOLO_CONFIGS[i].split('/')[-1].split('.')[0]
 
     data_only_yolo = DepthYoloHandTracker(
-        use_depth=False,
+        use_depth = False,
         use_hand = False, 
         yolo_model = SingsYOLO_MODELS[i], 
         yolo_configurations = SingsYOLO_CONFIGS[i])
@@ -114,7 +117,7 @@ for i in range(len(SingsYOLO_MODELS)):
             "successful detections: ", successful_detections,
             "failed detections: ", failed_detections,
             "no detections: ", no_detections,
-            sep='\t' , end='\r')
+            sep='    ' , end='\r')
 
     data_only_yolo.exit()
     print(str(i), model_name, "FPS: {:.2f}".format(np.mean(fps)), sep='\t' , end='\n')

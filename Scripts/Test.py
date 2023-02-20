@@ -118,7 +118,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 PALM_DETECTION_MODEL = str(SCRIPT_DIR / "../Models/Hands/palm_detection_sh4.blob")
 LANDMARK_MODEL_LITE = str(SCRIPT_DIR / "../Models/Hands/hand_landmark_lite_sh4.blob")
 MY_YOLO_MODEL = str(SCRIPT_DIR /  "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t_openvino_2021.4_6shave.blob")
-YOLO_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLO7t.json")
+YOLO_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t.json")
 
 ##################### INICIALIZACIÓN DE OBJETOS #####################
 
