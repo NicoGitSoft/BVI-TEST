@@ -10,6 +10,7 @@ def TEST(Device):
     successful_detections = 0
     failed_detections = 0
     no_detections = 0
+    fps = []
 
     # Inicialización del loop
     loop_start_time = time.time()
@@ -42,17 +43,7 @@ def TEST(Device):
 
     return average_fps, successful_detections, failed_detections, no_detections
 
-
-##################### inicialización de variables #####################
-times = []  # Muestras de los tiempos de ejecución del programa desde la primera captura de frame
-fps = []    # Muestras de los fps de ejecución del programa desde la primera captura de frame
-
-# Muestras de temperatura
-chipTemperatures = []       # Muestras de la temperatura del chip
-cpuTemperature = []         # Muestras de la temperatura del CPU
-max6675Temperature = []     # Muestras de la temperatura del sensor DHT22
-
-# Rutas de los modelos YOLOv8n, YOLOv7t, YOLOv7s, YOLOv5n
+# RUTAS DE LOS MODELOS
 SCRIPT_DIR = Path(__file__).resolve().parent
 SingsYOLOv8n_MODEL = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv8n/SingsYOLOv8n_openvino_2021.4_6shave.blob")
 SingsYOLOv7s_MODEL = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7s/SingsYOLOv7s_openvino_2021.4_6shave.blob")
@@ -62,7 +53,6 @@ SingsYOLOv8n_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv8n/SingsYOLOv8
 SingsYOLOv7t_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t.json")
 SingsYOLOv7s_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7s/SingsYOLOv7s.json")
 SingsYOLOv5n_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv5n/SingsYOLOv5n.json")
-
 YOLOv8n_MODEL = str(SCRIPT_DIR / "../Models/YOLO/YOLOv8n/YOLOv8n_openvino_2021.4_6shave.blob")
 YOLOv8s_MODEL = str(SCRIPT_DIR / "../Models/YOLO/YOLOv8s/YOLOv8s_openvino_2021.4_6shave.blob")
 YOLOv7s_MODEL = str(SCRIPT_DIR / "../Models/YOLO/YOLOv7s/YOLOv7s_openvino_2021.4_6shave.blob")
@@ -75,15 +65,15 @@ YOLOv7t_CONFIG = str(SCRIPT_DIR / "../Models/YOLO/YOLOv7t/YOLOv7t.json")
 YOLOv5n_CONFIG = str(SCRIPT_DIR / "../Models/YOLO/YOLOv5n/YOLOv5n.json")
 
 # Listas de los modelos y sus respectivas configuraciones
-SingsYOLO_MODELS = [   SingsYOLOv7s_MODEL  ]
-SingsYOLO_CONFIGS = [   SingsYOLOv7s_CONFIG ]
+SingsYOLO_MODELS = [SingsYOLOv8n_MODEL, SingsYOLOv7s_MODEL, SingsYOLOv7t_MODEL, SingsYOLOv5n_MODEL]
+SingsYOLO_CONFIGS = [SingsYOLOv8n_CONFIG, SingsYOLOv7s_CONFIG, SingsYOLOv7t_CONFIG, SingsYOLOv5n_CONFIG]
 
-# Tabla
+# Tabla de resultados
 table = PrettyTable()
 table.field_names = ["Yolo Model", "YoloDepth", "YoloDepth + HandTrackerVPU", "YoloDepth + HandTrackerCPU", "Susccessful detections", "Failed detections", "No detections"]
 
 visualize = True
-max_frames = 50
+max_frames = 100
 ##################### Ejecución de los modelos #####################
 for i, model_path in enumerate(SingsYOLO_MODELS):
 
@@ -139,9 +129,6 @@ for i, model_path in enumerate(SingsYOLO_MODELS):
 # FPS promedio para YOLO + DEPTH + mediapipe: 9.86
 # Test finalizado para el modelo SingsYOLOv5n en 6.888955593109131 segundos
 
-
-
-
 # RASPBERRY PI 4B 4GB
 # FPS promedio para solo YOLO: 13.16
 # FPS promedio para YOLO + DEPTH: 12.73
@@ -186,4 +173,10 @@ for i, model_path in enumerate(SingsYOLO_MODELS):
 # | SingsYOLOv7s |  3.17 fps |          2.22 fps          |          1.95 fps          |        143.33 %        |       0.00 %      |    23.33 %    |
 # | SingsYOLOv7t |  2.28 fps |          2.41 fps          |          2.68 fps          |        70.67 %         |       0.00 %      |    29.33 %    |
 # | SingsYOLOv5n |  2.89 fps |          2.97 fps          |          3.15 fps          |        67.33 %         |      17.33 %      |    15.33 %    |
+# +--------------+-----------+----------------------------+----------------------------+------------------------+-------------------+---------------+
+
+# +--------------+-----------+----------------------------+----------------------------+------------------------+-------------------+---------------+
+# |  Yolo Model  | YoloDepth | YoloDepth + HandTrackerVPU | YoloDepth + HandTrackerCPU | Susccessful detections | Failed detections | No detections |
+# +--------------+-----------+----------------------------+----------------------------+------------------------+-------------------+---------------+
+# | SingsYOLOv7s |  1.17 fps |          0.87 fps          |          0.96 fps          |        77.33 %         |       0.00 %      |    22.67 %    |
 # +--------------+-----------+----------------------------+----------------------------+------------------------+-------------------+---------------+
