@@ -1,6 +1,11 @@
 from Utilities import *
-from prettytable import PrettyTable
-import time, os
+import max6675, subprocess, time, os
+
+# Objetos y variables globales
+max6675.set_pin(CS=22, CLK=18, SO=16, UNIT=1)
+chipTemperature = []    # Muestras de la temperatura del chip
+cpuTemperature = []     # Muestras de la temperatura del CPU
+max6675Temperature = [] # Muestras de la temperatura del sensor DHT22
 
 def TEST(Device):
 
@@ -17,14 +22,6 @@ def TEST(Device):
     for i in range(max_frames):
         frame, hands, yolo_detections, labels, width, height, depthFrame, chip_temperature = Device.next_frame()
 
-        # Contador de detecciones
-        detections_number = len(yolo_detections)
-        if detections_number > 0:
-            failed_detections += sum([1 for i in range(detections_number) if yolo_detections[i].label != 5])
-            successful_detections += 1 if detections_number != failed_detections else 0
-        else:
-            no_detections += 1
-
         # Contador de FPS
         frames_counter += 1
         current_time = time.time()
@@ -33,6 +30,18 @@ def TEST(Device):
             fps.append( frames_counter / timed_time )
             frames_counter = 0
             initial_timed_time = current_time
+
+            # Medir temperaturas   
+            chipTemperature.append(q_temp_out.get().chipTemperature.average) # Temperaratura del chip de la OAk-D
+            max6675Temperature.append(max6675.read_temp(cs)) # Temperatura del sensor DHT22
+            cpuTemperature.append(float(subprocess.check_output("vcgencmd measure_temp", shell=True).decode("utf-8").replace("temp=","").replace("'C\n",""))) # Temperatura de la CPU de la Raspberry Pi
+            # Mostrar por consola las temperaturas
+            print(
+                "Chip temperature: {:.2f} °C".format(chipTemperature[-1]),
+                "CPU temperature: {:.2f} °C".format(cpuTemperature[-1]), 
+                "max6675 temperature: {:.2f} °C".format(max6675Temperature[-1]),
+                sep = "\t"#, end = "\r"
+            )
         
         # Mostrar resultados por pantalla
         print(f"FPS: {fps[-1]:.2f} - Detecciones: {successful_detections} - Falsos positivos: {failed_detections} - No detecciones: {no_detections}", end="\r")
@@ -67,10 +76,6 @@ YOLOv5n_CONFIG = str(SCRIPT_DIR / "../Models/YOLO/YOLOv5n/YOLOv5n.json")
 # Listas de los modelos y sus respectivas configuraciones
 SingsYOLO_MODELS = [ SingsYOLOv8n_MODEL, SingsYOLOv7s_MODEL, SingsYOLOv7t_MODEL, SingsYOLOv5n_MODEL ]
 SingsYOLO_CONFIGS = [SingsYOLOv8n_CONFIG, SingsYOLOv7s_CONFIG, SingsYOLOv7t_CONFIG, SingsYOLOv5n_CONFIG]
-
-# Tabla de resultados
-table = PrettyTable()
-table.field_names = ["Yolo Model", "YoloDepth", "YoloDepth + HandTrackerVPU", "YoloDepth + HandTrackerCPU", "Susccessful detections", "Failed detections", "No detections"]
 
 visualize = True
 max_frames = 1000
