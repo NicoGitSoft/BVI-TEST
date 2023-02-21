@@ -73,7 +73,7 @@ table = PrettyTable()
 table.field_names = ["Yolo Model", "YoloDepth", "YoloDepth + HandTrackerVPU", "YoloDepth + HandTrackerCPU", "Susccessful detections", "Failed detections", "No detections"]
 
 visualize = True
-max_frames = 100
+max_frames = 1000
 ##################### Ejecución de los modelos #####################
 for i, model_path in enumerate(SingsYOLO_MODELS):
 
