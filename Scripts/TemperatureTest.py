@@ -6,7 +6,8 @@ SingsYOLOv7t_MODEL = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t
 SingsYOLOv7t_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t_openvino_2021.4_6shave.json")
 
 # Inicialización del dispositivo OAK-D
-Device = DepthYoloHandTracker(use_depth=True, use_hand=True, use_mediapipe=False, yolo_model=SingsYOLOv7t_MODEL, yolo_config=SingsYOLOv7t_CONFIG)
+Device = DepthYoloHandTracker(use_depth=True, use_hand=True, use_mediapipe=False, 
+                              yolo_model=SingsYOLOv7t_MODEL, yolo_configurations=SingsYOLOv7t_CONFIG)
 
 # Objetos y variables globales
 CS, CLK, SO, UNIT = 22, 18, 16, 1
