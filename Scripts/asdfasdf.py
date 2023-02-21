@@ -1,7 +1,6 @@
 from Utilities2 import *
-import cv2, serial, time, math, os, subprocess
-import scipy.io as sio
-import numpy as np
+from prettytable import PrettyTable
+import time, os
 
 def TEST(Device):
 
@@ -18,13 +17,10 @@ def TEST(Device):
         frame, hands, yolo_detections, labels, width, height, depthFrame, chip_temperature = Device.next_frame()
 
         # Contador de detecciones
-        if len(yolo_detections) > 0:
-            for detection in yolo_detections:
-                label_number = detection.label              
-                if label_number == 5:
-                    successful_detections += 1
-                else:
-                    failed_detections += 1
+        detections_number = len(yolo_detections)
+        if detections_number > 0:
+            failed_detections += sum([1 for i in range(detections_number) if yolo_detections[i].label != 5])
+            successful_detections += 1 if detections_number != failed_detections else 0
         else:
             no_detections += 1
 
@@ -38,7 +34,7 @@ def TEST(Device):
             initial_timed_time = current_time
         
         # Mostrar resultados por pantalla
-        print(f"Modelo {model_name} - FPS: {fps[-1]:.2f} - Detecciones: {successful_detections} - Falsos positivos: {failed_detections} - No detecciones: {no_detections}", end="\r")
+        print(f"FPS: {fps[-1]:.2f} - Detecciones: {successful_detections} - Falsos positivos: {failed_detections} - No detecciones: {no_detections}", end="\r")
 
     # Cerrar conexión con la cámara y mostrar resultados
     Device.exit()
@@ -79,52 +75,44 @@ YOLOv7t_CONFIG = str(SCRIPT_DIR / "../Models/YOLO/YOLOv7t/YOLOv7t.json")
 YOLOv5n_CONFIG = str(SCRIPT_DIR / "../Models/YOLO/YOLOv5n/YOLOv5n.json")
 
 # Listas de los modelos y sus respectivas configuraciones
-SingsYOLO_MODELS = [ SingsYOLOv8n_MODEL] 
-SingsYOLO_CONFIGS = [ SingsYOLOv8n_CONFIG]
+SingsYOLO_MODELS = [   SingsYOLOv7s_MODEL  ]
+SingsYOLO_CONFIGS = [   SingsYOLOv7s_CONFIG ]
+
+# Tabla
+table = PrettyTable()
+table.field_names = ["Yolo Model", "YoloDepth", "YoloDepth + HandTrackerVPU", "YoloDepth + HandTrackerCPU", "Susccessful detections", "Failed detections", "No detections"]
 
 visualize = True
-max_frames = 1000
+max_frames = 50
 ##################### Ejecución de los modelos #####################
-for j in range(len(SingsYOLO_MODELS)):
+for i, model_path in enumerate(SingsYOLO_MODELS):
 
-    model_name = SingsYOLO_CONFIGS[j][-17:-5]
-    ################## TEST USANDO SOLO YOLO ##################
-    only_yolo = DepthYoloHandTracker(
-        use_depth = False,
-        use_hand = False, 
-        yolo_model = SingsYOLO_MODELS[j], 
-        yolo_configurations = SingsYOLO_CONFIGS[j])
-    data_only_yolo = TEST(only_yolo)
-    ################## TEST USANDO YOLO + DEPTH ##################
-    data_yolo_depth = DepthYoloHandTracker(
-        use_depth = True,
-        use_hand = False,
-        yolo_model = SingsYOLO_MODELS[j],
-        yolo_configurations = SingsYOLO_CONFIGS[j])
-    data_yolo_depth = TEST(data_yolo_depth)
-    ################## TEST USANDO YOLO + DEPTH + HAND.blob ##################
-    data_yolo_depth_hand = DepthYoloHandTracker(
-        use_depth = True,
-        use_hand = True,
-        use_mediapipe=False,
-        yolo_model = SingsYOLO_MODELS[j],
-        yolo_configurations = SingsYOLO_CONFIGS[j])
-    data_yolo_depth_hand = TEST(data_yolo_depth_hand)
-    ################## TEST USANDO YOLO + DEPTH + mediapipe ##################
-    data_yolo_depth_mediapipe = DepthYoloHandTracker(
-        use_depth = True,
-        use_hand = True,
-        use_mediapipe=True,
-        yolo_model = SingsYOLO_MODELS[j],
-        yolo_configurations = SingsYOLO_CONFIGS[j])
-    data_yolo_depth_mediapipe = TEST(data_yolo_depth_mediapipe)
-    ################## RESULTADOS POR MODELO ##################
-    os.system('clear')
-    print(model_name + " TEST RESULTS (AverageFPS, SuccessfulDetections, FailedDetections, noDetections)")
-    print("Solo YOLO: ", data_only_yolo)
-    print("YOLO + DEPTH: ", data_yolo_depth)
-    print("YOLO + DEPTH + HAND.blob: ", data_yolo_depth_hand)
-    print("YOLO + DEPTH + mediapipe: ", data_yolo_depth_mediapipe) 
+    config_path = SingsYOLO_CONFIGS[i]
+    model_name = os.path.basename(model_path).split(".")[0].split("_")[0]
+    
+    # TEST 1: YOLO with spatial detection in the VPU.  
+    DepthYolo = DepthYoloHandTracker(use_depth = True, use_hand = False, yolo_model = model_path, yolo_configurations = config_path)
+    data_DepthYolo = TEST(DepthYolo)
+
+    # TEST 2: YOLO with spatial detection and tracking of the finger of the user on the VPU.
+    DepthYolo_HandTrackerVPU = DepthYoloHandTracker(use_depth = True, use_hand = True, use_mediapipe=False, yolo_model = model_path, yolo_configurations = config_path)
+    data_DepthYolo_HandTrackerVPU = TEST(DepthYolo_HandTrackerVPU)
+
+    # TEST 3: YOLO with spatial detection in the VPU, and tracking of the finger of the user in the CPU.
+    DepthYolo_HandTrackerCPU = DepthYoloHandTracker(use_depth = True, use_hand = True, use_mediapipe=True, yolo_model = model_path, yolo_configurations = config_path)
+    data_DepthYolo_HandTrackerCPU = TEST(DepthYolo_HandTrackerCPU)
+
+    # Agregar fila de datos a la tabla
+    table.add_row([
+        model_name, "{:.2f} fps".format(data_DepthYolo[0]),
+        "{:.2f} fps".format(data_DepthYolo_HandTrackerVPU[0]),
+        "{:.2f} fps".format(data_DepthYolo_HandTrackerCPU[0]),
+        "{:.2f} %".format( (data_DepthYolo[1]+data_DepthYolo_HandTrackerVPU[1]+data_DepthYolo_HandTrackerCPU[1])/(3*max_frames)*100 ),
+        "{:.2f} %".format( (data_DepthYolo[2]+data_DepthYolo_HandTrackerVPU[2]+data_DepthYolo_HandTrackerCPU[2])/(3*max_frames)*100 ),
+        "{:.2f} %".format( (data_DepthYolo[3]+data_DepthYolo_HandTrackerVPU[3]+data_DepthYolo_HandTrackerCPU[3])/(3*max_frames)*100 )
+    ])
+
+    print(table)
 
 
 # FPS promedio para solo YOLO: 13.19
@@ -183,3 +171,19 @@ for j in range(len(SingsYOLO_MODELS)):
 # YOLO + DEPTH:  (13.97212681490595, 0, 0, 1000)
 # YOLO + DEPTH + HAND.blob:  (6.434149805453163, 0, 0, 1000)
 # YOLO + DEPTH + mediapipe:  (7.481393394874306, 0, 0, 1000)
+
+# +----------------------------+-----------+----------------------------+----------------------------+------------------------+-------------------+---------------+
+# |         Yolo Model         | YoloDepth | YoloDepth + HandTrackerVPU | YoloDepth + HandTrackerCPU | Susccessful detections | Failed detections | No detections |
+# +----------------------------+-----------+----------------------------+----------------------------+------------------------+-------------------+---------------+
+# | SingsYOLOv7t_openvino_2021 | 10.68 fps |          5.00 fps          |          6.11 fps          |        69.33 %         |       0.00 %      |    30.67 %    |
+# | SingsYOLOv5n_openvino_2021 |  6.82 fps |          5.37 fps          |          5.86 fps          |        67.33 %         |      11.33 %      |    21.33 %    |
+# +----------------------------+-----------+----------------------------+----------------------------+------------------------+-------------------+---------------+
+
+# +--------------+-----------+----------------------------+----------------------------+------------------------+-------------------+---------------+
+# |  Yolo Model  | YoloDepth | YoloDepth + HandTrackerVPU | YoloDepth + HandTrackerCPU | Susccessful detections | Failed detections | No detections |
+# +--------------+-----------+----------------------------+----------------------------+------------------------+-------------------+---------------+
+# | SingsYOLOv8n | 10.67 fps |          4.30 fps          |          5.36 fps          |         0.00 %         |       0.00 %      |    100.00 %   |
+# | SingsYOLOv7s |  3.17 fps |          2.22 fps          |          1.95 fps          |        143.33 %        |       0.00 %      |    23.33 %    |
+# | SingsYOLOv7t |  2.28 fps |          2.41 fps          |          2.68 fps          |        70.67 %         |       0.00 %      |    29.33 %    |
+# | SingsYOLOv5n |  2.89 fps |          2.97 fps          |          3.15 fps          |        67.33 %         |      17.33 %      |    15.33 %    |
+# +--------------+-----------+----------------------------+----------------------------+------------------------+-------------------+---------------+
