@@ -70,10 +70,11 @@ SingsYOLO_CONFIGS = [SingsYOLOv7t_CONFIG ]
 
 # Tabla de resultados
 table = PrettyTable()
-table.field_names = ["Yolo Model", "YoloDepth", "YoloDepth + HandTrackerVPU", "YoloDepth + HandTrackerCPU", "Susccessful detections", "Failed detections", "No detections"]
+
+table.field_names = ["Model","YoloDepth + HandTrackerCPU"]
 
 visualize = True
-max_frames = 1000
+max_frames = 100
 ##################### Ejecución de los modelos #####################
 for i, model_path in enumerate(SingsYOLO_MODELS):
 
@@ -81,12 +82,12 @@ for i, model_path in enumerate(SingsYOLO_MODELS):
     model_name = os.path.basename(model_path).split(".")[0].split("_")[0]
     
     # TEST 1: YOLO with spatial detection in the VPU.  
-    DepthYolo = DepthYoloHandTracker(use_depth = True, use_hand = False, yolo_model = model_path, yolo_configurations = config_path)
-    data_DepthYolo = TEST(DepthYolo)
+    #DepthYolo = DepthYoloHandTracker(use_depth = True, use_hand = False, yolo_model = model_path, yolo_configurations = config_path)
+    #data_DepthYolo = TEST(DepthYolo)
 
     # TEST 2: YOLO with spatial detection and tracking of the finger of the user on the VPU.
-    DepthYolo_HandTrackerVPU = DepthYoloHandTracker(use_depth = True, use_hand = True, use_mediapipe=False, yolo_model = model_path, yolo_configurations = config_path)
-    data_DepthYolo_HandTrackerVPU = TEST(DepthYolo_HandTrackerVPU)
+    #DepthYolo_HandTrackerVPU = DepthYoloHandTracker(use_depth = True, use_hand = True, use_mediapipe=False, yolo_model = model_path, yolo_configurations = config_path)
+    #data_DepthYolo_HandTrackerVPU = TEST(DepthYolo_HandTrackerVPU)
 
     # TEST 3: YOLO with spatial detection in the VPU, and tracking of the finger of the user in the CPU.
     DepthYolo_HandTrackerCPU = DepthYoloHandTracker(use_depth = True, use_hand = True, use_mediapipe=True, yolo_model = model_path, yolo_configurations = config_path)
@@ -94,12 +95,13 @@ for i, model_path in enumerate(SingsYOLO_MODELS):
 
     # Agregar fila de datos a la tabla
     table.add_row([
-        model_name, "{:.2f} fps".format(data_DepthYolo[0]),
-        "{:.2f} fps".format(data_DepthYolo_HandTrackerVPU[0]),
-        "{:.2f} fps".format(data_DepthYolo_HandTrackerCPU[0]),
-        "{:.2f} %".format( (data_DepthYolo[1]+data_DepthYolo_HandTrackerVPU[1]+data_DepthYolo_HandTrackerCPU[1])/(3*max_frames)*100 ),
-        "{:.2f} %".format( (data_DepthYolo[2]+data_DepthYolo_HandTrackerVPU[2]+data_DepthYolo_HandTrackerCPU[2])/(3*max_frames)*100 ),
-        "{:.2f} %".format( (data_DepthYolo[3]+data_DepthYolo_HandTrackerVPU[3]+data_DepthYolo_HandTrackerCPU[3])/(3*max_frames)*100 )
+        model_name,
+        #"{:.2f} fps".format(data_DepthYolo[0]),
+        #"{:.2f} fps".format(data_DepthYolo_HandTrackerVPU[0]),
+        "{:.2f} fps".format(data_DepthYolo_HandTrackerCPU[0])
+        #"{:.2f} %".format( (data_DepthYolo[1]+data_DepthYolo_HandTrackerVPU[1]+data_DepthYolo_HandTrackerCPU[1])/(3*max_frames)*100 ),
+        #"{:.2f} %".format( (data_DepthYolo[2]+data_DepthYolo_HandTrackerVPU[2]+data_DepthYolo_HandTrackerCPU[2])/(3*max_frames)*100 ),
+        #"{:.2f} %".format( (data_DepthYolo[3]+data_DepthYolo_HandTrackerVPU[3]+data_DepthYolo_HandTrackerCPU[3])/(3*max_frames)*100 )
     ])
 
     print(table)

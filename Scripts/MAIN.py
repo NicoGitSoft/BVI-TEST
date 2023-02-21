@@ -1,4 +1,4 @@
-from Utilities2 import *
+from Utilities import *
 import cv2, serial, time, math, os, subprocess
 import scipy.io as sio
 import numpy as np
@@ -58,7 +58,7 @@ f2 = lambda x: (x + 1)**2 - 1
 
 ##################### CONSTANTES Y CONFIGURACIONES #####################
 width = height = 640 # Resolución de entrada de la red neuronal
-VideoRGB = cv2.VideoWriter('VideoRGB.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (width, height))
+#VideoRGB = cv2.VideoWriter('VideoRGB.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (width, height))
 
 # Región de interés (ROI) para la estimación de la distancia de obstáculos z
 DELTA = 30 # Radio de la ROI Cental en pixeles
@@ -115,10 +115,10 @@ start_buzze_time = 0        # tiempo de inicio de sonido del buzzer
 
 # Rutas de los modelos neuronales y configuraciones
 SCRIPT_DIR = Path(__file__).resolve().parent
-PALM_DETECTION_MODEL = str(SCRIPT_DIR / "../Models/Hands Models/palm_detection_sh4.blob")
-LANDMARK_MODEL_LITE = str(SCRIPT_DIR / "../Models/Hands Models/hand_landmark_lite_sh4.blob")
-MY_YOLO_MODEL = str(SCRIPT_DIR / "../Models/SingsYOLOv8n/SingsYOLOv8n_openvino_2021.4_6shave.blob")
-YOLO_CONFIG = str(SCRIPT_DIR / "../Models/SingsYOLOv8n/SingsYOLOv8n.json")
+PALM_DETECTION_MODEL = str(SCRIPT_DIR / "../Models/Hands/palm_detection_sh4.blob")
+LANDMARK_MODEL_LITE = str(SCRIPT_DIR / "../Models/Hands/hand_landmark_lite_sh4.blob")
+MY_YOLO_MODEL = str(SCRIPT_DIR /  "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t_openvino_2021.4_6shave.blob")
+YOLO_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t.json")
 
 ##################### INICIALIZACIÓN DE OBJETOS #####################
 
@@ -129,7 +129,8 @@ try:
     cs = 22
     sck = 18
     so = 16
-    max6675.set_pin(cs, sck, so, 1)
+    max6675.set_pi#(cs, sck, so, 1)
+    Measure = True
     print("Thermocouple MAX6675 is ready")
 except(ImportError, RuntimeError):
     Measure = False
@@ -141,9 +142,10 @@ data = DepthYoloHandTracker(
     temperature_sensing = Measure,
     use_hand = True,
     use_yolo = True,
-    yolo_model = MY_YOLO_MODEL,
+    use_depth = True,
+    use_mediapipe=False,
     yolo_configurations = YOLO_CONFIG,
-    )
+    yolo_model = MY_YOLO_MODEL)
 
 visualize = True
 try:# Intentar establecer un objeto para comunicación serial a usando UART 
@@ -157,8 +159,8 @@ except:
 #######################################################################	
 
 loop_start_time = time.time() # tiempo de inicio del bucle principal
-while True:
-    frame, hands, yolo_detections, labels, width, height, depthFrame, chip_temperature = data.next_frame()
+for i in range(0, 500):
+    frame, hand , yolo_detections, labels, width, height, depthFrame, chip_temperature = data.next_frame()
 
     # Dedección de obstáculos en la ROI Central
     """ Uso del buzzer para sonar más frecuentemente a medida que se acerca un objeto en la ROI central"""
@@ -180,9 +182,10 @@ while True:
     si es así, se le informa al usuario que que su mano está siendo untilizada como referencia para la 
     detección del objeto más cercano, de lo contrario se usa centro de la imagen como referencia """
     x_ref, y_ref = (x_center, y_center) # Usar coordenadas del centro de la imagen como referencia en primera instancia
-    if len(hands) > 0: # Si se detecta la mano del usuario, cambiar la referencia a la punta del dedo índice
-        x_doll, y_doll = hands[0].landmarks[0,:2] # Coordenadas de la muñeca
-        x_index_finger, y_index_finger = hands[0].landmarks[8,:2] # Coordenadas de la punta del dedo índice
+
+    if len(hand ) > 0: # Si se detecta la mano del usuario, cambiar la referencia a la punta del dedo índice
+        x_doll, y_doll = hand[0] # Coordenadas de la muñeca
+        x_index_finger, y_index_finger = hand[1] # Coordenadas de la punta del dedo índice
         dollROI = ROI((x_doll, y_doll), DELTA_DOLL) # ROI de la muñeca en la imagen de color
         dollDepthROI = ROI2DepthROI(dollROI) # ROI de la muñeca en la imagen de profundidad
         dollDistance = AverageDepth(dollDepthROI, depthFrame) # Distancia de la muñeca a la cámara
@@ -288,9 +291,10 @@ while True:
             chipTemperatures.append(chip_temperature)
             max6675Temperature.append(max6675.read_temp(cs)) # Temperatura del sensor DHT22
             cpuTemperature.append(float(subprocess.check_output("vcgencmd measure_temp", shell=True).decode("utf-8").replace("temp=","").replace("'C\n",""))) # Temperatura de la CPU de la Raspberry Pi
-        fps.append( frames_counter / (current_time - frames_timer) )
+        #fps.append( frames_counter / (current_time - frames_timer) )
         frames_counter = 0
         frames_timer = current_time
+    fps.append( 1 / (current_time - frames_timer) if (current_time - frames_timer) > 0 else 0 )
 
     if visualize:
         # Visualizar la mapa de profundidad
@@ -308,6 +312,9 @@ while True:
         # Mostrar el frame de la cámara RGB
         cv2.imshow("frame", frame)
 
+    # Mostrar por consola los fps
+    print("fps: {:.2f}".format(fps[-1]), sep="\t", end="\r")
+
     # Salir del programa si alguna de estas teclas son presionadas {ESC, SPACE, q}
     if cv2.waitKey(1) in [27, 32, ord('q')]:
         break
@@ -315,6 +322,7 @@ while True:
 # Cerrar objetos
 data.exit()
 if serial_is_connected: serial.close()
+
 
 # Mostrar los FPS promedio por consola
 print("FPS: {:.2f}".format(np.mean(fps)))
