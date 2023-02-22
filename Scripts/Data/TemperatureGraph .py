@@ -54,7 +54,7 @@ print("popt_max6675Temperature: ", popt_max6675Temperature, "pcov_max6675Tempera
 print("popt_cpuTemperature: ", popt_cpuTemperature, "pcov_cpuTemperature: ", pcov_cpuTemperature)
 
 # plot the data
-ax.plot(n, cpuTemperature, 'ro', markersize=2, label=r'CPU Temperature')
+ax.plot(n, cpuTemperature, 'r.', markersize=2, label=r'CPU Temperature')
 ax.plot(n, chipTemperature, 'c.', markersize=2, label=r"OAK-D Chip Temperature")
 ax.plot(n, max6675Temperature, 'g.', markersize=2, label=r'Thermocouple Temperature')
 
@@ -72,7 +72,6 @@ ax.axhline(y=popt_cpuTemperature[1], color='k', alpha=0.5, linestyle='--', linew
 ax.text(1, 0.95, str(round(popt_cpuTemperature[1], 2)) + r'$^{\circ}$C', horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=15)
 ax.text(1, 0.77, str(round(popt_chipTemperature[1], 2)) + r'$^{\circ}$C', horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=15)	
 ax.text(1, 0.25, str(round(popt_max6675Temperature[1], 2)) + r'$^{\circ}$C', horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=15)
-
 
 
 plt.title(r"Operating system temperature measurements")
