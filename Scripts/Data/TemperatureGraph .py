@@ -33,8 +33,8 @@ def func(x, T_0, T_inf, tau): # función
 start_sample = 50
 samples = len(data) # número de muestras
 n = np.linspace(0, 3600, samples - start_sample) # tiempo en segundos
-times = data."Time (s)"[start_sample:] # tiempo en segundos
-chipTemperature = data."OAK-D Chip Temperature (°C)"[start_sample:] # temperatura del chip
+times = data.Time[start_sample:] # tiempo en segundos
+chipTemperature = data.ChipTemperature[start_sample:] # temperatura del chip en °C
 # define my initial guess for the parameters
 p0_chipTemperature = [37, 57, 500]
 p0_max6675Temperature = [20, 27, 500]

@@ -58,15 +58,20 @@ max6675_2 = file2['THERMOCOUPLE'][start_sample:]
 def func(x, T_inf, T_0, tau):
     return (T_inf - T_0) * (1 - np.exp(-x/tau)) + T_0
 
+
+p0_chipTemperature = [37, 57, 500]
+p0_max6675Temperature = [20, 27, 500]
+p0_cpuTemperature = [59.5, 66.6604982, 450]
+
 # Ajuste de curva exponencial para los datos del archivo 1
-popt_vpu_1, pcov_vpu_1 = curve_fit(func, times_1, vpu_1, p0=[40, 40, 1])
-popt_cpu_1, pcov_cpu_1 = curve_fit(func, times_1, cpu_1, p0=[40, 40, 1])
-popt_max6675_1, pcov_max6675_1 = curve_fit(func, times_1, max6675_1, p0=[40, 40, 1])
+popt_vpu_1, pcov_vpu_1 = curve_fit(func, times_1, vpu_1, p0=[37, 57, 500])
+popt_cpu_1, pcov_cpu_1 = curve_fit(func, times_1, cpu_1, p0=[20, 27, 500])
+popt_max6675_1, pcov_max6675_1 = curve_fit(func, times_1, max6675_1, p0=[59.5, 66.6604982, 450])
 
 # Ajuste de curva exponencial para los datos del archivo 2
-popt_vpu_2, pcov_vpu_2 = curve_fit(func, times_2, vpu_2, p0=[40, 40, 1])
-popt_cpu_2, pcov_cpu_2 = curve_fit(func, times_2, cpu_2, p0=[40, 40, 1])
-popt_max6675_2, pcov_max6675_2 = curve_fit(func, times_2, max6675_2, p0=[40, 40, 1])
+popt_vpu_2, pcov_vpu_2 = curve_fit(func, times_2, vpu_2, p0=[37, 57, 500])
+popt_cpu_2, pcov_cpu_2 = curve_fit(func, times_2, cpu_2, p0=[20, 27, 500])
+popt_max6675_2, pcov_max6675_2 = curve_fit(func, times_2, max6675_2, p0=[59.5, 66.6604982, 450])
 
 # Mostrar por consola los parámetros de ajuste pcov
 print('Archivo 1')
@@ -82,25 +87,25 @@ print('MAX6675: ', popt_max6675_2)
 fig, axs = plt.subplots(3, 1, figsize=(20, 20), sharex=True)
 
 # Graficar los datos de la VPU y sus ajustes de curva exponencial
-axs[0].plot(times_1, vpu_1, 'r.', markersize=2, label=r'VPU Temperature')
+#axs[0].plot(times_1, vpu_1, 'r.', markersize=2, label=r'VPU Temperature')
 axs[0].plot(times_1, func(times_1, *popt_vpu_1), 'r-', label=r'VPU Fit')
-axs[0].plot(times_2, vpu_2, 'b.', markersize=2, label=r'VPU Temperature')
+#axs[0].plot(times_2, vpu_2, 'b.', markersize=2, label=r'VPU Temperature')
 axs[0].plot(times_2, func(times_2, *popt_vpu_2), 'b-', label=r'VPU Fit')
 axs[0].set_ylabel(r'VPU Temperature ($^\circ$C)')
 axs[0].legend()
 
 # Graficar los datos de la CPU y sus ajustes de curva exponencial
-axs[1].plot(times_1, cpu_1, 'r.', markersize=2, label=r'CPU Temperature')
+#axs[1].plot(times_1, cpu_1, 'r.', markersize=2, label=r'CPU Temperature')
 axs[1].plot(times_1, func(times_1, *popt_cpu_1), 'r-', label=r'CPU Fit')
-axs[1].plot(times_2, cpu_2, 'b.', markersize=2, label=r'CPU Temperature')
+#axs[1].plot(times_2, cpu_2, 'b.', markersize=2, label=r'CPU Temperature')
 axs[1].plot(times_2, func(times_2, *popt_cpu_2), 'b-', label=r'CPU Fit')
 axs[1].set_ylabel(r'CPU Temperature ($^\circ$C)')
 axs[1].legend()
 
 # Graficar los datos del MAX6675 y sus ajustes de curva exponencial
-axs[2].plot(times_1, max6675_1, 'r.', markersize=2, label=r'MAX6675 Temperature')
+#axs[2].plot(times_1, max6675_1, 'r.', markersize=2, label=r'MAX6675 Temperature')
 axs[2].plot(times_1, func(times_1, *popt_max6675_1), 'r-', label=r'MAX6675 Fit')
-axs[2].plot(times_2, max6675_2, 'b.', markersize=2, label=r'MAX6675 Temperature')
+#axs[2].plot(times_2, max6675_2, 'b.', markersize=2, label=r'MAX6675 Temperature')
 axs[2].plot(times_2, func(times_2, *popt_max6675_2), 'b-', label=r'MAX6675 Fit')
 axs[2].set_ylabel(r'MAX6675 Temperature ($^\circ$C)')
 axs[2].set_xlabel(r'Time (s)')
