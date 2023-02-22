@@ -1,5 +1,9 @@
 """
-Script para graficar los datos dos archivos, "Temperatures_HandsGPU.csv" y "Temperatures_HandsVPU.csv",
+Script para graficar los datos dos archivos llamados:
+
+file1: "system temperatures without distributed processing.csv"
+file2: "system temperatures with distributed processing.csv"
+
 los cuales contienen los datos de temperatura de la VPU del sensor OAK-D, 
 la temperatura de la CPU de la Raspberry Pi 4 y la temperatura del sensor MAX6675.
 
@@ -22,7 +26,6 @@ import numpy as np
 from scipy.optimize import curve_fit
 import os
 
-
 # Set the font to Computer Modern 12pt
 rc('font', **{'family': 'serif', 'serif': ['Computer Modern'], 'size': 26})
 rc('text', usetex=True)
@@ -33,8 +36,8 @@ plt.rc('text.latex', preamble=r'\usepackage{wasysym}')
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # Leer los datos
-file1 = pd.read_csv('Temperatures_HandsVPU.csv')
-file2 = pd.read_csv('Temperatures_HandsGPU.csv')
+file1 = pd.read_csv('system temperatures without distributed processing.csv')
+file2 = pd.read_csv('system temperatures with distributed processing.csv')
 
 # Obtener los datos de las temperaturas
 start_sample = 50
