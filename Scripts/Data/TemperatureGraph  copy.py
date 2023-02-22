@@ -19,6 +19,8 @@ t2,z2,d2,h2,v2,nearest_labels2,haptic_messages2,buzzer_messages2,chipTemperature
 t3,z3,d3,h3,v3,nearest_labels3,haptic_messages3,buzzer_messages3,chipTemperature3,max6675Temperature3,cpuTemperature3
 ...
 tn,zn,dn,hn,vn,nearest_labelsn,haptic_messagesn,buzzer_messagesn,chipTemperaturen,max6675Temperaturen,cpuTemperaturen
+
+La idea es graficar unicamente los datod de temperaturas y sus respectivos ajustes de curva 
 """
 
 
