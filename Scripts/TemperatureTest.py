@@ -8,7 +8,6 @@ SingsYOLOv7t_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7
 # Inicialización del dispositivo OAK-D
 Device = DepthYoloHandTracker(use_depth=True, use_hand=True, use_mediapipe=False, yolo_model=SingsYOLOv7t_MODEL, yolo_config=SingsYOLOv7t_CONFIG)
 
-
 # Objetos y variables globales
 CS, CLK, SO, UNIT = 22, 18, 16, 1
 max6675.set_pin(CS, CLK, SO, UNIT)
@@ -38,8 +37,7 @@ for i in range(3466):
         thermocouple_temperatures.append(max6675.read_temp(CS))
 
         # Mostrar teperaturas por consola las temperaturas con 2 decimales
-        print("VPU: " + str(round(vpu_Temperature, 2)) + "ºC, CPU: " + str(round(cpu_Temperatures[-1], 2)) + "ºC, MAX6675: " + str(round(thermocouple_temperatures[-1], 2)) + "ºC")
-        
+        print("VPU: " + str(round(vpu_Temperature, 2)) + "ºC, CPU: " + str(round(cpu_Temperatures[-1], 2)) + "ºC, MAX6675: " + str(round(thermocouple_temperatures[-1], 2)) + "ºC") 
 
 # Guardar las muestras en un archivo .csv usando writerows
 with open('Temperatures.csv', 'w', newline='') as file:
