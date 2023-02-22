@@ -129,7 +129,7 @@ try:
     cs = 22
     sck = 18
     so = 16
-    max6675.set_pi#(cs, sck, so, 1)
+    max6675.set_pin(cs, sck, so, 1)
     Measure = True
     print("Thermocouple MAX6675 is ready")
 except(ImportError, RuntimeError):
@@ -137,7 +137,7 @@ except(ImportError, RuntimeError):
     print("Thermocouple MAX6675 is not ready")
 
 # Inicializar el objeto para la detección de manos y señalizaciones de espacios interiores
-Measure = False
+#Measure = False
 data = DepthYoloHandTracker(
     temperature_sensing = Measure,
     use_hand = True,

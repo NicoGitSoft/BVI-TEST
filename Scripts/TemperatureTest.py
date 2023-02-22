@@ -3,15 +3,15 @@ import max6675, subprocess, time, os, csv
 
 # Modelo a utilizar
 SingsYOLOv7t_MODEL = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t_openvino_2021.4_6shave.blob")
-SingsYOLOv7t_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t_openvino_2021.4_6shave.json")
+SingsYOLOv7t_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t.json")
 
 # Inicialización del dispositivo OAK-D
-Device = DepthYoloHandTracker(use_depth=True, use_hand=True, use_mediapipe=False, 
+Device = DepthYoloHandTracker(use_depth=True, use_hand=True, use_mediapipe=False, temperature_sensing=True,
                               yolo_model=SingsYOLOv7t_MODEL, yolo_configurations=SingsYOLOv7t_CONFIG)
 
 # Objetos y variables globales
-CS, CLK, SO, UNIT = 22, 18, 16, 1
-max6675.set_pin(CS, CLK, SO, UNIT)
+CS, SCK, SO, UNIT = 22, 18, 16, 1
+max6675.set_pin(CS, SCK, SO, UNIT)
 vpu_Temperatures = []           # Muestras de la temperatura del chip
 cpu_Temperatures = []           # Muestras de la temperatura del CPU
 thermocouple_temperatures = []  # Muestras de la temperatura del sensor MAX6675
@@ -35,10 +35,13 @@ for i in range(3466):
         # Almacenar temperaturas
         vpu_Temperatures.append(vpu_Temperature)
         cpu_Temperatures.append(float(subprocess.check_output("vcgencmd measure_temp", shell=True).decode("utf-8").replace("temp=","").replace("'C\n","")))
-        thermocouple_temperatures.append(max6675.read_temp(CS))
+        thermocouple_temperatures.append(max6675.read_temp(SCK))
 
         # Mostrar teperaturas por consola las temperaturas con 2 decimales
-        print("VPU: " + str(round(vpu_Temperature, 2)) + "ºC, CPU: " + str(round(cpu_Temperatures[-1], 2)) + "ºC, MAX6675: " + str(round(thermocouple_temperatures[-1], 2)) + "ºC") 
+        print("VPU: " + 
+              str(round(vpu_Temperatures[-1], 2)) + "ºC, CPU: " +
+              str(round(cpu_Temperatures[-1], 2)) + "ºC, MAX6675: " + 
+              str(round(thermocouple_temperatures[-1], 2)) + "ºC") 
 
 # Guardar las muestras en un archivo .csv usando writerows
 with open('Temperatures.csv', 'w', newline='') as file:
