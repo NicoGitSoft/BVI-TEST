@@ -1,3 +1,27 @@
+"""
+Este script grafica los datos de temperatura de la CPU de la Raspberry Pi 4, 
+la temperatura de la VPU de OAK-D y la temperatura de su disipador térmico.
+
+Una estructura de los datos es la siguiente:
+
+Tiempo (s),VPU (ºC),CPU (ºC),MAX6675 (ºC)
+t1,vpu1,cpu1,max6675_1
+t2,vpu2,cpu2,max6675_2
+t3,vpu3,cpu3,max6675_3
+...
+tn,vpun,cpun,max6675_n
+
+La otra estructura de los datos es la siguiente:
+
+times,z,d,h,v,nearest_labels,haptic_messages,buzzer_messages,chipTemperature,max6675Temperature,cpuTemperature
+t1,z1,d1,h1,v1,nearest_labels1,haptic_messages1,buzzer_messages1,chipTemperature1,max6675Temperature1,cpuTemperature1
+t2,z2,d2,h2,v2,nearest_labels2,haptic_messages2,buzzer_messages2,chipTemperature2,max6675Temperature2,cpuTemperature2
+t3,z3,d3,h3,v3,nearest_labels3,haptic_messages3,buzzer_messages3,chipTemperature3,max6675Temperature3,cpuTemperature3
+...
+tn,zn,dn,hn,vn,nearest_labelsn,haptic_messagesn,buzzer_messagesn,chipTemperaturen,max6675Temperaturen,cpuTemperaturen
+"""
+
+
 import pandas as pd
 import os
 from matplotlib import rc
@@ -13,8 +37,8 @@ plt.rc('text.latex', preamble=r'\usepackage{wasysym}')
 # Ejecutar el script en la ruta actual
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-# Leer los datos de los archivos .csv
-data = pd.read_csv("Temperaturas1GPU.csv")
+# Leer los datos del archivos .csv
+data = pd.read_csv("Temperaturas2.csv")
 
 # Graficar distancia horizontal y vertical del centro de la imagen a la detección más cercana
 fig = plt.figure(figsize=(16, 8))
@@ -33,8 +57,11 @@ def func(x, T_0, T_inf, tau): # función
 start_sample = 50
 samples = len(data) # número de muestras
 n = np.linspace(0, 3600, samples - start_sample) # tiempo en segundos
-times = data."Time (s)"[start_sample:] # tiempo en segundos
-chipTemperature = data."OAK-D Chip Temperature (°C)"[start_sample:] # temperatura del chip
+times = data.times[start_sample:samples] # vector de tiempos	
+chipTemperature = data.chipTemperature[start_sample:samples] # vector de temperaturas
+max6675Temperature = data.max6675Temperature[start_sample:samples] # vector de temperaturas
+cpuTemperature = data.cpuTemperature[start_sample:samples] # vector de temperaturas
+
 # define my initial guess for the parameters
 p0_chipTemperature = [37, 57, 500]
 p0_max6675Temperature = [20, 27, 500]
@@ -49,9 +76,9 @@ popt_max6675Temperature, pcov_max6675Temperature = curve_fit(func, n, max6675Tem
 # fit the data to the model for cpuTemperature
 popt_cpuTemperature, pcov_cpuTemperature = curve_fit(func, n, cpuTemperature, p0_cpuTemperature)
 
-print("popt_chipTemperature: ", popt_chipTemperature, "pcov_chipTemperature: ", pcov_chipTemperature)
-print("popt_max6675Temperature: ", popt_max6675Temperature, "pcov_max6675Temperature: ", pcov_max6675Temperature)
-print("popt_cpuTemperature: ", popt_cpuTemperature, "pcov_cpuTemperature: ", pcov_cpuTemperature)
+print("popt_chipTemperature: ", popt_chipTemperature)
+print("popt_max6675Temperature: ", popt_max6675Temperature)
+print("popt_cpuTemperature: ", popt_cpuTemperature)
 
 # plot the data
 ax.plot(n, cpuTemperature, 'ro', markersize=2, label=r'CPU Temperature')
