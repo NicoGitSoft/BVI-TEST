@@ -6,7 +6,7 @@ SingsYOLOv7t_MODEL = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t
 SingsYOLOv7t_CONFIG = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t.json")
 
 # Inicialización del dispositivo OAK-D
-Device = DepthYoloHandTracker(use_depth=True, use_hand=True, use_mediapipe=False, temperature_sensing=True,
+Device = DepthYoloHandTracker(use_depth=True, use_hand=True, use_mediapipe=True, temperature_sensing=True,
                               yolo_model=SingsYOLOv7t_MODEL, yolo_configurations=SingsYOLOv7t_CONFIG)
 
 # Objetos y variables globales
@@ -44,7 +44,7 @@ for i in range(3466):
               str(round(thermocouple_temperatures[-1], 2)) + "ºC") 
 
 # Guardar las muestras en un archivo .csv usando writerows
-with open('Temperatures.csv', 'w', newline='') as file:
+with open('Temperatures1CPU.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(["Tiempo (s)", "VPU (ºC)", "CPU (ºC)", "MAX6675 (ºC)"])
     writer.writerows(zip(times, vpu_Temperatures, cpu_Temperatures, thermocouple_temperatures))
