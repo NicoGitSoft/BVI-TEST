@@ -1,5 +1,5 @@
 from Utilities import *
-import max6675, subprocess, time, os
+import max6675, subprocess, time, os, csv
 
 # Modelo a utilizar
 SingsYOLOv7t_MODEL = str(SCRIPT_DIR / "../Models/Sings/SingsYOLOv7t/SingsYOLOv7t_openvino_2021.4_6shave.blob")
@@ -40,3 +40,9 @@ for i in range(3466):
         # Mostrar teperaturas por consola las temperaturas con 2 decimales
         print("VPU: " + str(round(vpu_Temperature, 2)) + "ºC, CPU: " + str(round(cpu_Temperatures[-1], 2)) + "ºC, MAX6675: " + str(round(thermocouple_temperatures[-1], 2)) + "ºC")
         
+
+# Guardar las muestras en un archivo .csv usando writerows
+with open('Temperatures.csv', 'w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(["Tiempo (s)", "VPU (ºC)", "CPU (ºC)", "MAX6675 (ºC)"])
+    writer.writerows(zip(times, vpu_Temperatures, cpu_Temperatures, thermocouple_temperatures))
