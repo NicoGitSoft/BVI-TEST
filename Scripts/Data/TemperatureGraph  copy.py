@@ -26,90 +26,112 @@ import numpy as np
 from scipy.optimize import curve_fit
 import os
 
-# Set the font to Computer Modern 12pt
+# Ejecutar el script en la ruta actual donde se encuentran los datos
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+# Leer los datos
+file1 = pd.read_csv('system temperatures with distributed processing.csv')
+file2 = pd.read_csv('system temperatures without distributed processing.csv')
+
+# Obtener los datos de las temperaturas
+start_sample = 50
+
+# vertor de nuestras
+n1 = np.arange(0, len(file1['TIMES'][start_sample:]))
+n2 = np.arange(0, len(file2['TIMES'][start_sample:]))
+
+# datos del archivo 1 
+VPU_TEMPERATURE_1 = file1['VPU'][start_sample:]
+CPU_TEMPERATURE_1 = file1['CPU'][start_sample:]
+MAX6675_TEMPERATURE_1 = file1['THERMOCOUPLE'][start_sample:]
+
+# datos del archivo 2
+VPU_TEMPERATURE_2 = file2['VPU'][start_sample:]
+CPU_TEMPERATURE_2 = file2['CPU'][start_sample:]
+MAX6675_TEMPERATURE_2 = file2['THERMOCOUPLE'][start_sample:]
+
+# Función para ajustes de curva exponencial
+def func(x, T_0, T_inf, tau):
+    return (T_inf - T_0) * (1 - np.exp(-x/tau)) + T_0
+
+# Puntos iniciales para ajuste de curva exponencial
+p0_VPU_TEMPERATURE_1 = p0_VPU_TEMPERATURE_2 = [37, 57, 500]
+p0_CPU_TEMPERATURE_1 = p0_CPU_TEMPERATURE_2 = [59.5, 66.6604982, 450]
+p0_MAX6675_TEMPERATURE_1 = p0_MAX6675_TEMPERATURE_2 = [20, 27, 500]
+
+# Ajuste de curva exponencial para los datos del archivo 1
+popt_VPU_TEMPERATURE_1, pcov_VPU_TEMPERATURE_1 = curve_fit(func, n1, VPU_TEMPERATURE_1, p0=p0_VPU_TEMPERATURE_1)
+popt_CPU_TEMPERATURE_1, pcov_CPU_TEMPERATURE_1 = curve_fit(func, n1, CPU_TEMPERATURE_1, p0=p0_CPU_TEMPERATURE_1)
+popt_MAX6675_TEMPERATURE_1, pcov_MAX6675_TEMPERATURE_1 = curve_fit(func, n1, MAX6675_TEMPERATURE_1, p0=p0_MAX6675_TEMPERATURE_1)
+
+# Ajuste de curva exponencial para los datos del archivo 2
+popt_VPU_TEMPERATURE_2, pcov_VPU_TEMPERATURE_2 = curve_fit(func, n2, VPU_TEMPERATURE_2, p0=p0_VPU_TEMPERATURE_2)
+popt_CPU_TEMPERATURE_2, pcov_CPU_TEMPERATURE_2 = curve_fit(func, n2, CPU_TEMPERATURE_2, p0=p0_CPU_TEMPERATURE_2)
+popt_MAX6675_TEMPERATURE_2, pcov_MAX6675_TEMPERATURE_2 = curve_fit(func, n2, MAX6675_TEMPERATURE_2, p0=p0_MAX6675_TEMPERATURE_2)
+
+# Mostrar por consola los parámetros de ajuste pcov
+print('Archivo 1\n VPU: ', popt_VPU_TEMPERATURE_1, '\n CPU: ', popt_CPU_TEMPERATURE_1, '\n MAX6675: ', popt_MAX6675_TEMPERATURE_1)
+print('Archivo 2\n VPU: ', popt_VPU_TEMPERATURE_2, '\n CPU: ', popt_CPU_TEMPERATURE_2, '\n MAX6675: ', popt_MAX6675_TEMPERATURE_2)
+
+
+########################## GRAFICAS ##########################
+
+# Configuración de las graficas
 rc('font', **{'family': 'serif', 'serif': ['Computer Modern'], 'size': 26})
 rc('text', usetex=True)
 rc('legend', fontsize=20)
 plt.rc('text.latex', preamble=r'\usepackage{wasysym}')
 
-# Ejecutar el script en la ruta actual donde se encuentran los datos
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+# Crear una figura
+figure_1 = plt.figure(figsize=(16, 8))
 
-# Leer los datos
-file1 = pd.read_csv('system temperatures without distributed processing.csv')
-file2 = pd.read_csv('system temperatures with distributed processing.csv')
+# Ajustar el tamaño de la grafica al tamaño de la figura
+deltaX, deltaY = 0.065, .09
+offsetX, offsetY = 0.05, 0.03
+ax = figure_1.add_axes([deltaX, deltaY + offsetY, 1 - 2 * deltaX, 1 - 2 * deltaY])
 
-# Obtener los datos de las temperaturas
-start_sample = 50
+# Agrergar grid principal con lineas, punteadas y color gris claro
+plt.grid(color='gray', linestyle=':', alpha=.2) 
 
-# datos del archivo 1 
-times_1 = file1['TIMES'][start_sample:]
-vpu_1 = file1['VPU'][start_sample:]
-cpu_1 = file1['CPU'][start_sample:]
-max6675_1 = file1['THERMOCOUPLE'][start_sample:]
+# Graficar los datos de temperatura del archivo 1
+ax.plot(n1, CPU_TEMPERATURE_1, 'r.', markersize=2, label=r'CPU Temperature')
+ax.plot(n1, VPU_TEMPERATURE_1, 'c.', markersize=2, label=r"OAK-D Chip Temperature")
+ax.plot(n1, MAX6675_TEMPERATURE_1, 'g.', markersize=2, label=r'Thermocouple Temperature')
 
-# datos del archivo 2
-times_2 = file2['TIMES'][start_sample:]
-vpu_2 = file2['VPU'][start_sample:]
-cpu_2 = file2['CPU'][start_sample:]
-max6675_2 = file2['THERMOCOUPLE'][start_sample:]
+# Graficar los ajustes de curva exponencial para los datos del archivo 1
+ax.plot(n1, func(n1, *popt_VPU_TEMPERATURE_1), 'k-', label="_nolegend_")
+ax.plot(n1, func(n1, *popt_MAX6675_TEMPERATURE_1), 'k-', label="_nolegend_")
+ax.plot(n1, func(n1, *popt_CPU_TEMPERATURE_1), 'k-', label="_nolegend_")
 
-# Función para ajustes de curva exponencial
-def func(x, T_inf, T_0, tau):
-    return (T_inf - T_0) * (1 - np.exp(-x/tau)) + T_0
+# Asintotas horizontales en el valor de T_inf para cada curva
+ax.axhline(y=popt_VPU_TEMPERATURE_1[1], color='k', alpha=0.5, linestyle='--', linewidth=1, label="_nolegend_")
+ax.axhline(y=popt_MAX6675_TEMPERATURE_1[1], color='k', alpha=0.5, linestyle='--', linewidth=1, label="_nolegend_")
+ax.axhline(y=popt_CPU_TEMPERATURE_1[1], color='k', alpha=0.5, linestyle='--', linewidth=1, label="_nolegend_")
 
+# Definir limites de ejes 
+y_min = min([popt_CPU_TEMPERATURE_1[0], popt_VPU_TEMPERATURE_1[0], popt_MAX6675_TEMPERATURE_1[0]])
+y_max = max([popt_CPU_TEMPERATURE_1[1], popt_VPU_TEMPERATURE_1[1], popt_MAX6675_TEMPERATURE_1[1]])
+y_delta = (y_max - y_min) * 0.1
+ax.set_ylim(y_min - y_delta, y_max + y_delta)
+plt.xlim(0, 3800)
 
-p0_chipTemperature = [37, 57, 500]
-p0_max6675Temperature = [20, 27, 500]
-p0_cpuTemperature = [59.5, 66.6604982, 450]
+# colodar los valores de T_inf con 2 desimales en el ylabel de la derecha
 
-# Ajuste de curva exponencial para los datos del archivo 1
-popt_vpu_1, pcov_vpu_1 = curve_fit(func, times_1, vpu_1, p0=[37, 57, 500])
-popt_cpu_1, pcov_cpu_1 = curve_fit(func, times_1, cpu_1, p0=[20, 27, 500])
-popt_max6675_1, pcov_max6675_1 = curve_fit(func, times_1, max6675_1, p0=[59.5, 66.6604982, 450])
+yText_CPU_TEMPERATURE_1 = (popt_CPU_TEMPERATURE_1[1]-y_min+y_delta)/(y_max-y_min+2*y_delta)
+yText_VPU_TEMPERATURE_1 = (popt_VPU_TEMPERATURE_1[1]-y_min+y_delta)/(y_max-y_min+2*y_delta)
+yText_MAX6675_TEMPERATURE_1 = (popt_MAX6675_TEMPERATURE_1[1]-y_min+y_delta)/(y_max-y_min+2*y_delta)
 
-# Ajuste de curva exponencial para los datos del archivo 2
-popt_vpu_2, pcov_vpu_2 = curve_fit(func, times_2, vpu_2, p0=[37, 57, 500])
-popt_cpu_2, pcov_cpu_2 = curve_fit(func, times_2, cpu_2, p0=[20, 27, 500])
-popt_max6675_2, pcov_max6675_2 = curve_fit(func, times_2, max6675_2, p0=[59.5, 66.6604982, 450])
+ax.text(1, yText_CPU_TEMPERATURE_1, str(round(popt_CPU_TEMPERATURE_1[1], 2)) + r'$^{\circ}$C', horizontalalignment='right', verticalalignment='bottom', transform=ax.transAxes, fontsize=15)
+ax.text(1, yText_VPU_TEMPERATURE_1, str(round(popt_VPU_TEMPERATURE_1[1], 2)) + r'$^{\circ}$C', horizontalalignment='right', verticalalignment='bottom', transform=ax.transAxes, fontsize=15)	
+ax.text(1, yText_MAX6675_TEMPERATURE_1, str(round(popt_MAX6675_TEMPERATURE_1[1], 2)) + r'$^{\circ}$C', horizontalalignment='right', verticalalignment='bottom', transform=ax.transAxes, fontsize=15)
 
-# Mostrar por consola los parámetros de ajuste pcov
-print('Archivo 1')
-print('VPU: ', popt_vpu_1)
-print('CPU: ', popt_cpu_1)
-print('MAX6675: ', popt_max6675_1)
-print('Archivo 2')
-print('VPU: ', popt_vpu_2)
-print('CPU: ', popt_cpu_2)
-print('MAX6675: ', popt_max6675_2)
+# Mostrar el titulo, etiquetas de los ejes y leyenda
+plt.title(r"System temperatures with distributed processing")
+plt.xlabel(r'Time [s]')
+plt.ylabel(r'Temperature [°C]')
 
-# Crear la figura
-fig, axs = plt.subplots(3, 1, figsize=(20, 20), sharex=True)
-
-# Graficar los datos de la VPU y sus ajustes de curva exponencial
-#axs[0].plot(times_1, vpu_1, 'r.', markersize=2, label=r'VPU Temperature')
-axs[0].plot(times_1, func(times_1, *popt_vpu_1), 'r-', label=r'VPU Fit')
-#axs[0].plot(times_2, vpu_2, 'b.', markersize=2, label=r'VPU Temperature')
-axs[0].plot(times_2, func(times_2, *popt_vpu_2), 'b-', label=r'VPU Fit')
-axs[0].set_ylabel(r'VPU Temperature ($^\circ$C)')
-axs[0].legend()
-
-# Graficar los datos de la CPU y sus ajustes de curva exponencial
-#axs[1].plot(times_1, cpu_1, 'r.', markersize=2, label=r'CPU Temperature')
-axs[1].plot(times_1, func(times_1, *popt_cpu_1), 'r-', label=r'CPU Fit')
-#axs[1].plot(times_2, cpu_2, 'b.', markersize=2, label=r'CPU Temperature')
-axs[1].plot(times_2, func(times_2, *popt_cpu_2), 'b-', label=r'CPU Fit')
-axs[1].set_ylabel(r'CPU Temperature ($^\circ$C)')
-axs[1].legend()
-
-# Graficar los datos del MAX6675 y sus ajustes de curva exponencial
-#axs[2].plot(times_1, max6675_1, 'r.', markersize=2, label=r'MAX6675 Temperature')
-axs[2].plot(times_1, func(times_1, *popt_max6675_1), 'r-', label=r'MAX6675 Fit')
-#axs[2].plot(times_2, max6675_2, 'b.', markersize=2, label=r'MAX6675 Temperature')
-axs[2].plot(times_2, func(times_2, *popt_max6675_2), 'b-', label=r'MAX6675 Fit')
-axs[2].set_ylabel(r'MAX6675 Temperature ($^\circ$C)')
-axs[2].set_xlabel(r'Time (s)')
-axs[2].legend()
-
-# Mostrar la figura
+plt.legend(loc='best')
+#plt.savefig('Tempetature.svg', format='svg', dpi=1200)
+plt.savefig('System temperatures with distributed processing.png', format='png', dpi=1200)
+#plt.savefig('Tempetature.pdf', format='pdf', dpi=1200)
 plt.show()
