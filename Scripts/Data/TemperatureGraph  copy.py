@@ -30,7 +30,7 @@ import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # Leer los datos
-file1 = pd.read_csv('system temperatures with distributed processing.csv')
+file1 = pd.read_csv('Temperatures_HandsGPU.csv')
 file2 = pd.read_csv('system temperatures without distributed processing.csv')
 
 # Obtener los datos de las temperaturas
@@ -132,6 +132,6 @@ plt.ylabel(r'Temperature [°C]')
 
 plt.legend(loc='best')
 #plt.savefig('Tempetature.svg', format='svg', dpi=1200)
-plt.savefig('System temperatures with distributed processing.png', format='png', dpi=1200)
+plt.savefig('Temperatures_HandsGPU.png', format='png', dpi=1200)
 #plt.savefig('Tempetature.pdf', format='pdf', dpi=1200)
 plt.show()
