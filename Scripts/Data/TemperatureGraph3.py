@@ -106,11 +106,42 @@ rc('legend', fontsize=14)
 plt.rc('text.latex', preamble=r'\usepackage{wasysym}')
 
 # Crear una figura para los subplots
-figure_1 = plt.figure(figsize=(18, 6))
-
+figure_1 = plt.figure(figsize=(24, 6))
 
 # Crear el primer subplot
-ax1 = figure_1.add_subplot(121)
+ax0 = figure_1.add_subplot(131)
+# Agrergar grid principal con lineas, punteadas y color gris claro (color='gray', linestyle=':', alpha=.2)
+ax0.grid(color='gray', linestyle=':', alpha=.2)
+# Agregar datos del archivo 0
+ax0.plot(n0, CPU_TEMPERATURE_0, 'b.', markersize=2, label=r'CPU')
+ax0.plot(n0, VPU_TEMPERATURE_0, 'r.', markersize=2, label=r'VPU')
+ax0.plot(n0, MAX6675_TEMPERATURE_0, 'g.', markersize=2, label=r'Heat sink')
+# Graficar los ajustes de curva exponencial para los datos del archivo 0
+ax0.plot(n0, func(n0, *popt_VPU_TEMPERATURE_0), color='k', alpha=0.9, linestyle='--', linewidth=1, label="_nolegend_")
+ax0.plot(n0, func(n0, *popt_CPU_TEMPERATURE_0),  color='k', alpha=0.9, linestyle='--', linewidth=1, label="_nolegend_")
+ax0.plot(n0, func(n0, *popt_MAX6675_TEMPERATURE_0),  color='k', alpha=0.9, linestyle='--', linewidth=1, label="_nolegend_")
+# Asintotas de los ajustes de curva exponencial
+ax0.axhline(y=popt_VPU_TEMPERATURE_0[1], color='k', alpha=0.5, linestyle='--', linewidth=1, label="_nolegend_")
+ax0.axhline(y=popt_CPU_TEMPERATURE_0[1], color='k', alpha=0.5, linestyle='--', linewidth=1, label="_nolegend_")
+ax0.axhline(y=popt_MAX6675_TEMPERATURE_0[1], color='k', alpha=0.5, linestyle='--', linewidth=1, label="_nolegend_")
+# texto de los valores de T_inf
+yText_CPU_TEMPERATURE_0 = (popt_CPU_TEMPERATURE_0[1]-y_min+y_delta)/(y_max-y_min+2*y_delta) - 0.008
+yText_VPU_TEMPERATURE_0 = (popt_VPU_TEMPERATURE_0[1]-y_min+y_delta)/(y_max-y_min+2*y_delta) - 0.008
+yText_MAX6675_TEMPERATURE_0 = (popt_MAX6675_TEMPERATURE_0[1]-y_min+y_delta)/(y_max-y_min+2*y_delta) - 0.008
+ax0.text(1-0.008, yText_CPU_TEMPERATURE_0, str(round(popt_CPU_TEMPERATURE_0[1], 2)) + r'$^{\circ}$C', horizontalalignment='right', verticalalignment='bottom', transform=ax0.transAxes, fontsize=14)
+ax0.text(1-0.008, yText_VPU_TEMPERATURE_0, str(round(popt_VPU_TEMPERATURE_0[1], 2)) + r'$^{\circ}$C', horizontalalignment='right', verticalalignment='bottom', transform=ax0.transAxes, fontsize=14)	
+ax0.text(1-0.008, yText_MAX6675_TEMPERATURE_0, str(round(popt_MAX6675_TEMPERATURE_0[1], 2)) + r'$^{\circ}$C', horizontalalignment='right', verticalalignment='bottom', transform=ax0.transAxes, fontsize=14)
+# limites de los ejes
+ax0.set_ylim(y_min-y_delta, y_max+y_delta)
+ax0.set_xlim(0, 3999)
+# Etiquetas 
+ax0.set_ylabel(r'Temperature ($^{\circ}$C)')
+ax0.set_xlabel(r'Time (s)')
+ax0.set_title(r'Temperatures without distributed processing')
+ax0.legend(loc='center right')
+
+# Crear el segundo subplot
+ax1 = figure_1.add_subplot(132)
 # Agrergar grid principal con lineas, punteadas y color gris claro (color='gray', linestyle=':', alpha=.2)
 ax1.grid(color='gray', linestyle=':', alpha=.2)
 # Agregar datos del archivo 1
@@ -139,10 +170,10 @@ ax1.set_xlim(0, 3999)
 ax1.set_ylabel(r'Temperature ($^{\circ}$C)')
 ax1.set_xlabel(r'Time (s)')
 ax1.set_title(r'Temperatures without distributed processing')
-ax1.legend(loc='center')
+ax1.legend(loc='center right')
 
-# Crear el segundo subplot
-ax2 = figure_1.add_subplot(122)
+# Crear el tercer subplot
+ax2 = figure_1.add_subplot(133)
 # Agrergar grid principal con lineas, punteadas y color gris claro (color='gray', linestyle=':', alpha=.2)
 ax2.grid(color='gray', linestyle=':', alpha=.2)
 # Agregar datos del archivo 2
@@ -150,9 +181,9 @@ ax2.plot(n2, VPU_TEMPERATURE_2, 'r.', markersize=2, label=r'VPU')
 ax2.plot(n2, CPU_TEMPERATURE_2, 'b.', markersize=2, label=r'CPU')
 ax2.plot(n2, MAX6675_TEMPERATURE_2, 'g.', markersize=2, label=r'Heat sink')
 # Graficar los ajustes de curva exponencial para los datos del archivo 2
-ax2.plot(n2, func(n2, *popt_VPU_TEMPERATURE_2), 'k-', label="_nolegend_")
-ax2.plot(n2, func(n2, *popt_CPU_TEMPERATURE_2), 'k-', label="_nolegend_")
-ax2.plot(n2, func(n2, *popt_MAX6675_TEMPERATURE_2), 'k-', label="_nolegend_")
+ax2.plot(n2, func(n2, *popt_VPU_TEMPERATURE_2), color='k', alpha=0.5, linestyle='--', linewidth=1, label="_nolegend_")
+ax2.plot(n2, func(n2, *popt_CPU_TEMPERATURE_2), color='k', alpha=0.5, linestyle='--', linewidth=1, label="_nolegend_")
+ax2.plot(n2, func(n2, *popt_MAX6675_TEMPERATURE_2), color='k', alpha=0.5, linestyle='--', linewidth=1, label="_nolegend_")
 # Asintotas horizontales en el valor de T_inf para cada curva
 ax2.axhline(y=popt_VPU_TEMPERATURE_2[1], color='k', alpha=0.5, linestyle='--', linewidth=1, label="_nolegend_")
 ax2.axhline(y=popt_MAX6675_TEMPERATURE_2[1], color='k', alpha=0.5, linestyle='--', linewidth=1, label="_nolegend_")
@@ -171,14 +202,10 @@ ax2.set_xlim(0, 3800)
 ax2.set_ylabel(r'Temperature ($^{\circ}$C)')
 ax2.set_xlabel(r'Time (s)')
 ax2.set_title(r'Temperatures with distributed processing')
-ax2.legend(loc="center")
+ax2.legend(loc="center right")
 
 # Ajustar los subplots a los bordes de la figura
 plt.tight_layout()
-plt.subplots_adjust(top=0.947, bottom=0.109, left=0.04, right=0.995, hspace=0.2, wspace=0.103)
-
-# Guardar la figura
-plt.savefig('System temperatures.png', dpi=1200)
 
 # Mostrar las graficas
 plt.show()
