@@ -48,10 +48,12 @@ for i in range(len(n)):
         # graficar una linea vertical negra delgada con un texto "c" en la parte superior
         plt.axvline(x=data.times[i], color='k', linewidth=2)
         plt.text(data.times[i], 150, r"$\twonotes$", color='k', fontsize=16, label=r'Report detection $\twonotes$')
-plt.plot(data.times, data.h, label=r'Horizontal distance to ROI')
-plt.plot(data.times, data.v, label=r'Vertical distance to ROI')
-plt.axhline(y=DELTA, color='k', linestyle="--" , linewidth=1, alpha=0.5, label=r'Threshold')
-plt.plot([], [], ' ',color='k', label=r'$\twonotes$ Report detection')
+plt.plot(data.times, data.h, label=r'Horizontal pixels')
+plt.plot(data.times, data.v, label=r'Vertical pixels')
+plt.axhline(y=DELTA, color='k', linestyle="--" , linewidth=1, alpha=0.5, label=r'Detection threshold $\delta$')
+plt.text(data.times[100], DELTA , r"$\delta$", color='k', fontsize=26, label=r'Detection threshold $\delta$', horizontalalignment='left', verticalalignment='center')
+
+plt.plot([], [], ' ',color='k', label=r'Report detection $\twonotes$')
 #plt.title(r"Haptic indications of communication interface", size=28)
 plt.xlabel(r'Time [s]')
 plt.ylabel(r'Number of pixels [px]')
