@@ -52,12 +52,18 @@ plt.plot(data.times, data.h, label=r'Horizontal distance to ROI')
 plt.plot(data.times, data.v, label=r'Vertical distance to ROI')
 plt.axhline(y=DELTA, color='k', linestyle="--" , linewidth=1, alpha=0.5, label=r'Threshold')
 plt.plot([], [], ' ',color='k', label=r'$\twonotes$ Report detection')
-plt.title(r"Haptic indications of communication interface", size=28)
+#plt.title(r"Haptic indications of communication interface", size=28)
 plt.xlabel(r'Time [s]')
 plt.ylabel(r'Number of pixels [px]')
 plt.xlim(data.times[100], data.times[1240])
 plt.legend(loc='upper right')
-plt.savefig('Haptic indications of communication interface.svg', format='svg', dpi=1200)
-plt.savefig('Haptic indications of communication interface.png', format='png', dpi=1200)
-plt.savefig('Haptic indications of communication interface.pdf', format='pdf', dpi=1200)
+
+# Ajustar los subplots a los bordes de la figura
+plt.tight_layout()
+#plt.subplots_adjust(top=0.947, bottom=0.109, left=0.04, right=0.995, hspace=0.2, wspace=0.103)
+
+# Guardar la imagen en formato .svg, .png y .pdf
+plt.savefig('Haptic indications of communication interface.svg', format='svg', dpi=1200, bbox_inches='tight')
+plt.savefig('Haptic indications of communication interface.png', format='png', dpi=1200, bbox_inches='tight')
+plt.savefig('Haptic indications of communication interface.pdf', format='pdf', dpi=1200, bbox_inches='tight')
 plt.show()
